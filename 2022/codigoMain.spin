@@ -58,7 +58,7 @@ repeat
   if ina[16]
     atras
 
-
+  {esta parte no es mi codigo, a cambiar todavia. La idea seria despues meter un selector de estrategia tambien}
   if ina[19]==1    ' Sensor en frente; no se si hace falta el ==1, creo que lo ideal seria aca que este tenga corta distancia (media); u con otro sensor confirmar para que sea rapido
     'adelanterapido
     adelante
