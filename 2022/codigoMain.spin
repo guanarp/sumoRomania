@@ -1,8 +1,9 @@
 {Prueba de sensores
+Esta parte del comentario es todo de codigo reciclado no le estoy dando mucha bola todaavia pero cuando vaya a documentar voy a corregir bien
 Pin0: Sensor Linea izquierda (0=blanco 1=negro)
 Pin1: Sensor Linea derecha (0=blanco 1=negro) esto debo de hacer analogico en realidad, veremos cuando lleguen
-Pin2: Control A (0=apagado 1=encendido) ''ver que onda
-Pin3: Control B  (0=apagado 1=encendido)   '' same
+Pin2: Control A (0=apagado 1=encendido) ''ver que onda, estos ya existian en el codigo anteriormente, yo dejo porque podria usar nomas
+Pin3: Control B  (0=apagado 1=encendido)   ''En realidad deberia de tener 5 de estos porque 5 pines de control habrian (4 de estrategia 1 para prender)
 Pin4: Libre
 Pin5: Salida motor izquierda    (1000=atras 2000=adelante)  verif
 Pin6: Salida motor derecha  (1000=atras 2000=adelante)  verif con conexionado
