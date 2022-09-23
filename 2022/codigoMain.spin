@@ -58,7 +58,23 @@ repeat
   if ina[16]
     atras
 
-  {esta parte no es mi codigo, a cambiar todavia. La idea seria despues meter un selector de estrategia tambien}
+  elseif ina[17]
+    izquierda90
+
+  elseif ina[23]
+    derecha90
+  
+  elseif ina[18]
+    izquierdacorto
+  
+  elseif ina[20]
+    derechacorto
+  
+  'aca hay que pensar bien como se puede aprovechar el paralelismo para los sensores
+  
+
+
+  {esta parte no es mi codigo, a cambiar todavia. La idea seria despues meter un selector de estrategia tambien}  
   if ina[19]==1    ' Sensor en frente; no se si hace falta el ==1, creo que lo ideal seria aca que este tenga corta distancia (media); u con otro sensor confirmar para que sea rapido
     'adelanterapido
     adelante
@@ -85,7 +101,7 @@ repeat
   PULSOUT(6,750) 'Motor izquierda verif
 
 pub adelante        ''Verificado
-if (ina[0]==0 or ina[1]==0)        'esperamos por el sensor de lineas 1 es negro
+{if (ina[0]==0 or ina[1]==0)        'esperamos por el sensor de lineas 1 es negro
     repeat 40
             PULSOUT(5,600) 'Motor derecha  verif
             PULSOUT(6,900) 'Motor izquierda  verif
@@ -97,10 +113,10 @@ if (ina[0]==0 or ina[1]==0)        'esperamos por el sensor de lineas 1 es negro
   pause(20)
 else
             PULSOUT(5,800) 'Motor derecha     verif
-            PULSOUT(6,700) 'Motor izquierda   verif
+            PULSOUT(6,700) 'Motor izquierda   verif}
 
 pub adelanterapido
-if (ina[0]==0 or ina[1]==0)        'esperamos por el sensor de lineas 1 es negro
+{if (ina[0]==0 or ina[1]==0)        'esperamos por el sensor de lineas 1 es negro
       repeat 40
               PULSOUT(5,600) 'Motor derecha  ver
               PULSOUT(6,900) 'Motor izquierda  ver
@@ -112,49 +128,78 @@ if (ina[0]==0 or ina[1]==0)        'esperamos por el sensor de lineas 1 es negro
       pause(20)
 else
               PULSOUT(5,850) 'Motor derecha     ver
-              PULSOUT(6,650) 'Motor izquierda   ver
+              PULSOUT(6,650) 'Motor izquierda   ver}
 
-pub derechacorto
-repeat 1
-  PULSOUT(5,520) 'Motor derecha     ver
-  PULSOUT(6,520) 'Motor izquierda   ver
-  pause(20)
-PULSOUT(5,750) 'Motor derecha  ver
-PULSOUT(6,750) 'Motor izquierda ver
-pause(20)
+pub derechacorto | OneMS, TimeBase, Time
 
-pub izquierdacorto
-repeat 1
+'esto podria ponerse en 0 nomas uno y el otro activar como para tener mejor rapidez de reaccion, cuestion de probar
+
+TimeBase := cnt
+OneMS = clkfreq/1000
+
+repeat until !ina[20] 'no se si es esta la notacion (hasta que ya no lea)
+  Time := cnt
+  PULSOUT(5,1040)
+  PULSOUT(6,1040)
+  if (Time - TimeBase) > 15 * OneMS
+    quit
+PULSOUT(5,1500)
+PULSOUT(6,1500)
+
+
+pub izquierdacorto | OneMS, TimeBase, Time
+{repeat 1
   PULSOUT(5,980) 'Motor derecha     ver
   PULSOUT(6,980) 'Motor izquierda   ver
   pause(20)
 PULSOUT(5,750) 'Motor derecha  ver
 PULSOUT(6,750) 'Motor izquierda ver
-pause(20)
+pause(20)}
+TimeBase := cnt
+OneMS = clkfreq/1000
 
-pub derecha90    ''verificado
-repeat 30
-  PULSOUT(5,650) 'Motor derecha     ver
-  PULSOUT(6,650) 'Motor izquierda   ver
-PULSOUT(5,750) 'Motor derecha  ver
-PULSOUT(6,750) 'Motor izquierda ver
-pause(20)
+repeat until !ina[18] 'no se si es esta la notacion (hasta que ya no lea)
+  Time := cnt
+  PULSOUT(5,1960)
+  PULSOUT(6,1960)
+  if (Time - TimeBase) > 15 * OneMS
+    quit
+PULSOUT(5,1500)
+PULSOUT(6,1500)
 
-pub izquierda90
-repeat 30
-  PULSOUT(5,850) 'Motor derecha     ver
-  PULSOUT(6,850) 'Motor izquierda   ver
-PULSOUT(5,750) 'Motor derecha  ver
-PULSOUT(6,750) 'Motor izquierda ver
-pause(20)
 
-pub atras
-repeat until time
-  PULSOUT(5,1200) 
-  PULSOUT(6,1200) 
-PULSOUT(5,750) 'Motor derecha  ver
-PULSOUT(6,750) 'Motor izquierda ver
-pause(20)
+pub derecha90 | OneMS, TimeBase    ''comprobar
+TimeBase := cnt
+OneMS := clkfreq / 1000
+
+PULSOUT(5,1300)
+PULSOUT(6,1300)
+waitcn(TimeBase += 30*OneMS) 'ajustar 
+PULSOUT(5,1500) 
+PULSOUT(6,1500) 
+'pause(20)
+
+pub izquierda90 | OneMS, TimeBase 'comprobar
+TimeBase := cnt
+OneMS := clkfreq / 1000
+
+PULSOUT(5,1900) 
+PULSOUT(6,1900) 
+waitcnt(TimeBase += 30*OneMS) 'ajustasr
+PULSOUT(5,1500) 
+PULSOUT(6,1500) 
+'pause(20)
+
+pub atras | OneMS, TimeBase ''comprobar
+TimeBase := cnt
+OneMS := clkfreq / 1000
+
+PULSOUT(5,1200) 
+PULSOUT(6,1200)
+waitcnt(TimeBase += 40*OneMS) 'ese 40 es un valor random despues vamos a tener que ajustar 
+PULSOUT(5,1500) 
+PULSOUT(6,1500) 
+'pause(20)
 
 PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
 {{
