@@ -1,7 +1,7 @@
 {Prueba de sensores
 Esta parte del comentario es todo de codigo reciclado no le estoy dando mucha bola todaavia pero cuando vaya a documentar voy a corregir bien
-Pin0: Sensor Linea izquierda (0=blanco 1=negro)
-Pin1: Sensor Linea derecha (0=blanco 1=negro) esto debo de hacer analogico en realidad, veremos cuando lleguen
+Pin0: IGNORAR AHORA Sensor Linea izquierda (0=blanco 1=negro)
+Pin1: IGNORAR AHORA Sensor Linea derecha (0=blanco 1=negro) esto debo de hacer analogico en realidad, veremos cuando lleguen
 Pin2: Control A (0=apagado 1=encendido) ''ver que onda, estos ya existian en el codigo anteriormente, yo dejo porque podria usar nomas
 Pin3: Control B  (0=apagado 1=encendido)   ''En realidad deberia de tener 5 de estos porque 5 pines de control habrian (4 de estrategia 1 para prender)
 Pin4: Libre
@@ -9,12 +9,16 @@ Pin5: Salida motor izquierda    (1000=atras 2000=adelante)  verif
 Pin6: Salida motor derecha  (1000=atras 2000=adelante)  verif con conexionado
 Pin 7: Libre
 Pin 15: Libre no anda
-Pin 16: Sensor Objetos atras (0=nada 1=objeto)
+Pin 16: No hay atras
 Pin 17: Sensor Objetos izquierda (0=nada 1=objeto)
 Pin 18: Sensor Objetos frente izquierda  (0=nada 1=objeto)
 Pin 20: Sensor Objetos frente (0=nada 1=objeto)
 Pin 22: Sensor Objetos frente derecha (0=nada 1=objeto)
 Pin 23: Sensor Objetos derecha (0=nada 1=objeto)
+Pin 24: linea izquierda
+Pin 25: linea derecha
+
+pin 30: pin de control para resetear de una el botcito
 }
 
 CON
@@ -38,14 +42,19 @@ var
 PUB Principal
 dira[0..3]~     ''Entradas sensores de lineas y pines de control A y B
 dira[5..6]~~    ''Salidas motor
-dira[16..23]~   ''Entradas sensores oponentes (8 sensores)
+dira[16..25]~   ''Entradas sensores oponentes (8 sensores)
 ''us:= clkfreq / 1_000_000                  ' Clock cycles for 1 us
 PULSOUT(5,1500) 'Motor1 siempre inicia apagado
 PULSOUT(6,1500) 'Motor2 siempre inicia apagado
+dira[30]~~
+outa[30]~~ ''Poner dos ~~ pone en high
 
-outa[8] := 1 ''no se que es esto creo que una lucecita
+'outa[8] := 1 ''no se que es esto creo que una lucecita
 
 cognew(lecturas, @Stack)
+cognew(selfStop, @Stack2)
+
+'300mili
 
 
 repeat until ina[2] ''Para prender
@@ -57,12 +66,12 @@ repeat
   'contar los 5 seg
   ''repeat
 
-  pauseS(5)
+  pauseS(1) 'ahora le pongo 1s nomas for the lolz
 
   {esto si funciona habria que cambiar por las constantes mencionadas arriba para mejor implementacion}
 
 
-  while ina[15] and ina[14] and ina[24] ''aca hay que cambiar por las variables, el 24 es para kill switch
+  while ina[24] and ina[25] ''no hay kill switch todavia solo con los sens de linea estamos
     if ina[16]
       atras180
 
@@ -125,6 +134,24 @@ pub lecturas
     valor1 := ina[17]
     valor2 := ina[18]
     valor3 := ina[19]
+
+
+pub selfStop | TimeBase, OneMs, Time
+
+  TimeBase := cnt
+  OneMS = clkfreq/1000
+  repeat
+    Time = cnt
+    if (Time - TimeBase) > 310 * OneMS and (ina[24] or ina[25])
+      PULSOUT(5,1500)
+      PULSOUT(6,1500)                                              ' Set to output
+      !outa[30] ''Aca ponemos en low y con esto puenteado deberia de reiniciar el botcito
+
+
+
+
+
+
 
 
 pub adelante        ''Verificado
