@@ -23,18 +23,25 @@ var
    long us, ban
    long Stack[1000] 'Stack space for new cog
 PUB Principal
-dira[3..4]~~
-outa[3..4]~    ''Salidas motor
+
+dira[0]~~
+outa[0]~    ''Salidas motor
+
+dira[1]~
 us:= clkfreq / 1_000_000                  ' Clock cycles for 1 us
 {PULSOUT(5,750) 'Motor derecha
 PULSOUT(6,750) 'Motor izquierda}
 
 ban:=0
 
-PULSOUT(3,1500)
-PULSOUT(4,1500)
+
+repeat until ina[1]
+  outa[0]~
 {cognew (control, @Stack)} ''habilitamos un cog con 1000 espacios para stack
 {Print("Hola mundo")}
+
+pauseSec(5)
+
 repeat
   {PULSOUT(9,1400)
   PULSOUT(10,1400)
@@ -45,12 +52,10 @@ repeat
   PULSOUT(9,1600)
   PULSOUT(10,1600)
   pauseSec(5)}
-  PULSOUT(3,1500)
-  PULSOUT(4,1500)
-  pauseSec(2)
-  PULSOUT(3,1550)
-  PULSOUT(4,1550)
-  pauseSec(2)
+  !outa[0]
+  pauseMs(500)
+  !outa[0]
+  pauseMs(500)
 
 
   {pauseSec(3)
@@ -79,7 +84,7 @@ repeat
           PULSOUT(6,750)
           pause(20) }
 
-pub control
+{pub control
 repeat
   if ina[2]==1        'esperamos por el control
       if ban==0
@@ -88,7 +93,7 @@ repeat
          ban:=1
       pause(500)
   else
-    ban :=1
+    ban :=1 }
 
 
 {PUB Print | S
@@ -126,7 +131,7 @@ PUB pauseSec(time) | clocks              '' Pause for number of seconds
     clocks := (clkfreq * time) '' esto deberia de ser una constante, pero hay que probar, segun documentacion
     waitcnt(clocks + cnt) ''cnt se supone que cuenta el tiempo actual
 
-PUB pause(time) | clocks                 '' Pause for number of milliseconds
+PUB pauseMs(time) | clocks                 '' Pause for number of milliseconds
   if time > 0
     clocks := ((clkfreq / 1000) * time)
     waitcnt(clocks + cnt)

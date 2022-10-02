@@ -9,42 +9,58 @@ Serial:"FullDuplexSerial"
 CON
   _clkmode = xtal1 + pll16x    ''Configura como modo oscilador a crystal y multiplicador por 16 para obtener 80Mhz
   _xinfreq = 5_000_000         ''Configura el valor del crystal
+  cntMin     = 400
+
+  left = 16 ''Estos son los sensores Pepper
+  frontLeft = 17
+  front = 18
+  frontRight = 19
+  right = 20
+
+  leftLine = 21 ''Estos son los sensores de linea
+  rightLine = 22
+
+  mIzq = 23 ''Los pines para los motores
+  mDer = 24
 
 var
-long a, valor ,valor1 ,valor2 ,valor3 ,valor4 ,valor5 ,valor6 ,valor7 ,frontal, trasero, linea_adelante_derecha, linea_atras_derecha, linea_adelante_izquierda, linea_atras_izquierda
-long c3,d3,e3,f3,g3,a3,b3,c4,d4,e4,f4,g4,a4,a4s,b4,c5,d5,d5s,e5,f5,g5,a5,a5s,b5,c6,R
+long a,us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, sLineaIzq, sLineaDer
 long Stack[1000] 'Stack space for new cog
 long Stack2[1000] 'Stack space for new cog
 
 PUB Principal
-dira[8..9]~~    ''Configura como salida los pines 8 para led de prueba y 9 para parlante
-dira[16..25]~   ''Las entradas a leer
+dira[23..24]~~    ''Salidas motor
+dira[16..22]~   ''Entradas sensores
 ''a:=ina[16]
+us := clkfreq / 1_000_000
+outa[mIzq]~
+outa[mDer]~ ''Poniendo a 0 por seguridad
 
-R:=0 ''no se que carajo es esto
+cognew(lecturas, @Stack) ''Aca estoy llamando a un nucleo para que me haga las lecturas de los sensores
 
-cognew(lecturas, @Stack)
+PULSOUT(mIzq,1500) 'Motor1 siempre inicia apagado
+PULSOUT(mDer,1500) 'Motor2 siempre inicia apagado
 
 
-dira[6]~~ ''Pa ke     ''Configura como salida el pin 6
 Serial.start(31, 30, 0, 9600) ''Que onda esto no se de donde sale el start y sus parametros
   repeat
-    outa[6]:=1
+    PULSOUT(mIzq,1500) 'Motor1 siempre inicia apagado
+    PULSOUT(mDer,1500) 'Motor2 siempre inicia apagado
     ''valor:=ina[16]
     Serial.str(string("Sensor RF: "))
-    Serial.Dec(valor)
+    Serial.Dec(sDer)
     Serial.tx(13) ''El tx13 es un enter nomas
     ''valor1:=ina[17]
     Serial.str(string("Linea1: "))
-    Serial.Dec(valor1)
+    Serial.Dec(sLineaIzq)
     Serial.tx(13)
     ''valor2:=ina[18]
     Serial.str(string("Linea2: "))
-    Serial.Dec(valor2)
+    Serial.Dec(sLineaDer)
     Serial.tx(13)
     ''valor3:=ina[19]
     Serial.str(string("sensor presencia: "))
-    Serial.Dec(valor3)
+    Serial.Dec(sIzq)
     Serial.tx(13)
     ''valor4:=ina[20]
     Serial.str(string("==========================="))
@@ -68,15 +84,20 @@ Serial.start(31, 30, 0, 9600) ''Que onda esto no se de donde sale el start y sus
     Serial.tx(13)}
 
     ''outa[LED] := ina[SENSOR]     ''lee el sensor y le pasa el valor el led
-    pauseMs(200)
+    pauseMs(1000)
 
 pub lecturas
   ''lectura de sensores
   repeat
-    valor := ina[16]
-    valor1 := ina[17]
-    valor2 := ina[18]
-    valor3 := ina[19]
+    sIzq := ina[16]
+    sFrenteIzq := ina[17]
+    sFrente := ina[18]
+    sFrenteDer := ina[19]
+    sDer := ina[20]
+    sLineaIzq := ina[21]
+    sLineaDer := ina[22]
+
+
 
 
 PUB SEROUT_CHAR(Pin, char, Baud, Mode, Bits ) | x, BR
@@ -135,3 +156,20 @@ PUB pauseUs(time) | TimeBase, OneUS
         TimeBase := cnt
         repeat time
             waitcnt(TimeBase += OneUS)                            ' wait until clk gets there
+
+
+PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
+{{
+   esta descripcion es dudosa pero bueno
+   Produces an opposite pulse on the pin for the duration in 2uS increments
+   Smallest value is 10 at clkfreq = 80Mhz
+   Largest value is around 50 seconds at 80Mhz.
+     BS2.Pulsout(500)   ' 1 mS pulse
+}}
+  ClkCycles := (Duration *us) #> cntMin        ' duration * clk cycles for 2us
+  TimeBase := cnt                                                         ' - inst. time, min cntMin
+  dira[Pin]~~                                              ' Set to output
+  !outa[Pin]                                               ' set to opposite state
+  waitcnt(ClkCycles + TimeBase)                                 ' wait until clk gets there
+  !outa[Pin]                                               ' return to orig. state                                 'creo que aca no afecta hacer esto porque una vez nomas se hace no es repetitivo
+
