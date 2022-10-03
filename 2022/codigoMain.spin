@@ -1,7 +1,17 @@
+{Ignorar todavia el comentario, hay que cambiar a nuesstro pineado porque todo se cambio de lugar}
+
+{A toda la implementacion de codigo le falta los sensores Keyence}
+{Todos los valores de tiempo para los giros,etc todavia no se probaron y se tienen que corregir, el valor correcto tendremos con los imanes recien
+me parece}
+
+{Para los valores que se le pasa al pulsout creo que lo ideal 
+seria poner en una escala de -100% a 100% y el pulsout ya haga 
+la conversion, para mejor lectura y dimension de las velocidades}
+
 {Prueba de sensores
 Esta parte del comentario es todo de codigo reciclado no le estoy dando mucha bola todaavia pero cuando vaya a documentar voy a corregir bien
-Pin0: Sensor Linea izquierda (0=blanco 1=negro)
-Pin1: Sensor Linea derecha (0=blanco 1=negro) esto debo de hacer analogico en realidad, veremos cuando lleguen
+Pin0: IGNORAR AHORA Sensor Linea izquierda (0=blanco 1=negro)
+Pin1: IGNORAR AHORA Sensor Linea derecha (0=blanco 1=negro) esto debo de hacer analogico en realidad, veremos cuando lleguen
 Pin2: Control A (0=apagado 1=encendido) ''ver que onda, estos ya existian en el codigo anteriormente, yo dejo porque podria usar nomas
 Pin3: Control B  (0=apagado 1=encendido)   ''En realidad deberia de tener 5 de estos porque 5 pines de control habrian (4 de estrategia 1 para prender)
 Pin4: Libre
@@ -9,13 +19,22 @@ Pin5: Salida motor izquierda    (1000=atras 2000=adelante)  verif
 Pin6: Salida motor derecha  (1000=atras 2000=adelante)  verif con conexionado
 Pin 7: Libre
 Pin 15: Libre no anda
-Pin 16: Sensor Objetos atras (0=nada 1=objeto)
+Pin 16: No hay atras
 Pin 17: Sensor Objetos izquierda (0=nada 1=objeto)
 Pin 18: Sensor Objetos frente izquierda  (0=nada 1=objeto)
 Pin 20: Sensor Objetos frente (0=nada 1=objeto)
 Pin 22: Sensor Objetos frente derecha (0=nada 1=objeto)
 Pin 23: Sensor Objetos derecha (0=nada 1=objeto)
+Pin 24: linea izquierda
+Pin 25: linea derecha
+
+pin 30: pin de control para resetear de una el botcito
 }
+
+{OJO que solo hasta el pin numero 27 se puede usar, luego son pines especiales
+ el pin num 15 parece que no funciona (segun pruebas de korea) asi que mejor no usar
+ del 0 al 14 los pines son resistivos y no se tanto como afecta eso por eso estaba saltando, pero creo que no hay drama de los siguientes sensores 
+ montar en esos pines}
 
 CON
   clkmode = xtal1 + pll16x    ''Configura como modo oscilador a crystal y multiplicador por 16 para obtener 80Mhz
@@ -34,9 +53,12 @@ CON
   mIzq = 23 ''Los pines para los motores
   mDer = 24
 
+  killSwitchStart = 25 ''El pin para usar el comando de activacion (para empezar)
+  ''aca habria que poner mas pines para las estrategias
+
 
 var
-   long us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, sLineaIzq, sLineaDer
+   long us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, lineaIzq, lineaDer, startSignal
    byte ban
    long Stack[1000] 'Stack space for new cog
 
@@ -58,42 +80,42 @@ PULSOUT(mIzq,1500) 'Motor1 siempre inicia apagado
 PULSOUT(mDer,1500) 'Motor2 siempre inicia apagado
 
 
-cognew(lecturas, @Stack)
+cognew(lecturas, @Stack) ''Habilito un nucleo para que en paralelo ejecute la lectura de todos los sensores
 
 
-repeat until ina[2] ''Para prender
+repeat until startSignal ''Para prender
     PULSOUT(mIzq,1500) 'Motor1 siempre inicia apagado
     PULSOUT(mDer,1500) 'Motor2 siempre inicia apagado
-
-repeat
-
-  'contar los 5 seg
-  ''repeat
-
-  pauseS(5)
-
-  {esto si funciona habria que cambiar por las constantes mencionadas arriba para mejor implementacion}
+    ''idea: como aca en paralelo esta leyendo todos los sesnores, ya se puede elegir una materia aca mismo luego
 
 
-  while ina[21] and ina[22] ''no hay kill switch todavia solo con los sens de linea estamos
-    if ina[16]
-      izquierda90
+pauseS(5) ''tiempo reglamentado
 
-    elseif ina[20]
+repeat ''este bucle si ya es de trabajo del bot
+
+  {Hasta ahora esta estrategia tiene solamente todos los sensores peppers, hay que poner despues un arbol de decisiones para los keyence 
+  que van a estar arriba}
+
+  {Trata primero de corregir los lugares que mas tardaria en colocarse bien, lo ultimo que decide es ir de frente}
+  while lineaIzq and lineaDer ''Negro es 1, blacno es 0
+    if sIzq
+      izquierda90 ''tal vez y por la posicion del sensor conviene girar un poco mas de 90 deg
+
+    elseif sDer
       derecha90
 
-    elseif ina[17]
+    elseif sFrenteIzq
       izquierdacorto
       adelante
 
-    elseif ina[19]
+    elseif sFrenteDer
       derechacorto
       adelante
 
-    elseif ina[18]
+    elseif sFrente
       frenterapido
     else
-      frente
+      frente ''aca en vez de ir para el frente lento, podria quedarse quieto y buscar girando o algo asi, a discutir
 
 
 
@@ -125,21 +147,26 @@ repeat
             else
               adelante}
 
-    PULSOUT(mIzq,1000) 'Motor derecha   verif  ''Esto deberia de ser un atras"
-    PULSOUT(mDer,1000) 'Motor izquierda verif
+
+    {creo que algo bueno aca seria preguntar cual de los dos sensores fue el que leyo y a partir de eso corregir, o si no que general sea dar una media vuelta y buscar de nuevo}
+    atras180
+    {PULSOUT(mIzq,1000) 'Motor derecha   verif  ''Esto deberia de ser un atras"
+    PULSOUT(mDer,1000)} 'Motor izquierda verif
 
 
 
 pub lecturas
   ''lectura de sensores
   repeat
-    sIzq := ina[16]
-    sFrenteIzq := ina[17]
-    sFrente := ina[18]
-    sFrenteDer := ina[19]
-    sDer := ina[20]
-    sLineaIzq := ina[21]
-    sLineaDer := ina[22]
+    sIzq := ina[left]
+    sFrenteIzq := ina[frontLeft]
+    sFrente := ina[front]
+    sFrenteDer := ina[frontRight]
+    sDer := ina[right]
+    lineaIzq := ina[leftLine]
+    lineaDer := ina[rightLine]
+    startSignal := ina[killSwitchStart]
+    
 
 
 pub adelante        ''Verificado
@@ -178,7 +205,7 @@ else
 
 pub derechacorto | OneMS, TimeBase, Time
 
-'esto podria ponerse en 0 nomas uno y el otro activar como para tener mejor rapidez de reaccion, cuestion de probar
+'esto podria ponerse en 0 nomas uno y el otro activar como para tener mejor rapidez de reaccion, cuestion de probar, no se giraria sobre propio eje
 
 TimeBase := cnt
 OneMS = clkfreq/1000

@@ -1,3 +1,5 @@
+{PINES DESACTUALIZADOS, SI QUIERO USAR CAMBIAR}
+
 {Prueba de sensores
 Pin0: Sensor Linea Derecha (0=blanco 1=negro)
 Pin1: Sensor Linea Izquierda (0=blanco 1=negro)

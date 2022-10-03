@@ -1,3 +1,13 @@
+{Ignorar todavia el comentario, hay que cambiar a nuesstro pineado porque todo se cambio de lugar}
+
+{A toda la implementacion de codigo le falta los sensores Keyence}
+{Todos los valores de tiempo para los giros,etc todavia no se probaron y se tienen que corregir, el valor correcto tendremos con los imanes recien
+me parece}
+
+{Para los valores que se le pasa al pulsout creo que lo ideal 
+seria poner en una escala de -100% a 100% y el pulsout ya haga 
+la conversion, para mejor lectura y dimension de las velocidades}
+
 {Prueba de sensores
 Esta parte del comentario es todo de codigo reciclado no le estoy dando mucha bola todaavia pero cuando vaya a documentar voy a corregir bien
 Pin0: IGNORAR AHORA Sensor Linea izquierda (0=blanco 1=negro)
@@ -21,82 +31,89 @@ Pin 25: linea derecha
 pin 30: pin de control para resetear de una el botcito
 }
 
+{OJO que solo hasta el pin numero 27 se puede usar, luego son pines especiales
+ el pin num 15 parece que no funciona (segun pruebas de korea) asi que mejor no usar
+ del 0 al 14 los pines son resistivos y no se tanto como afecta eso por eso estaba saltando, pero creo que no hay drama de los siguientes sensores 
+ montar en esos pines}  
+
 CON
   _clkmode = xtal1 + pll16x    'Configura como modo oscilador a crystal y multiplicador por 16 para obtener 80Mhz; que hace el xtal1??
   _xinfreq = 5_000_000         'Configura el valor del crystal
   cntMin     = 400      ' Minimum waitcnt value to prevent lock-up
-  back = 16
-  left = 17
-  frontLeft = 18
-  front = 19
-  frontRight = 20
-  right = 21
+  
+  left = 16 ''Estos son los sensores Pepper
+  frontLeft = 17
+  front = 18
+  frontRight = 19
+  right = 20
+
+  leftLine = 21 ''Estos son los sensores de linea
+  rightLine = 22
+
+  mIzq = 23 ''Los pines para los motores
+  mDer = 24
+
+  killSwitchStart = 25 ''El pin para usar el comando de activacion (para empezar)
+  ''aca habria que poner mas pines para las estrategias
 
 
 var
-   long us
+   long us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, lineaIzq, lineaDer, startSignal
    byte ban
    long Stack[1000] 'Stack space for new cog
 
 
 PUB Principal
+
 ''dira[0..3]~     ''Entradas sensores de lineas y pines de control A y B
 dira[23..24]~~    ''Salidas motor
 dira[16..22]~   ''Entradas sensores
-''us:= clkfreq / 1_000_000                  ' Clock cycles for 1 us
+us:= clkfreq / 1_000_000                  ' Clock cycles for 1 us
+
+dira[23..24]~~    ''Salidas motor
+dira[16..22]~   ''Entradas sensores
+
 
 outa[mIzq]~
 outa[mDer]~ ''Poniendo a 0 por seguridad
 
-PULSOUT(mIzq,1500) 'Motor1 siempre inicia apagado
-PULSOUT(mDer,1500) 'Motor2 siempre inicia apagado
+parar
 
 
-
-{dira[30]~~
-outa[30]~~} ''Poner dos ~~ pone en high
-
-'outa[8] := 1 ''no se que es esto creo que una lucecita
-
-cognew(lecturas, @Stack)
+cognew(lecturas, @Stack) ''Habilito un nucleo para que en paralelo ejecute la lectura de todos los sensores
 cognew(selfStop, @Stack2)
 
-'300mili
 
+repeat until startSignal ''Para prender
+    parar
+    ''idea: como aca en paralelo esta leyendo todos los sesnores, ya se puede elegir una materia aca mismo luego
 
-{repeat until ina[2] ''Para prender
-    PULSOUT(23,1500) 'Motor1 siempre inicia apagado
-    PULSOUT(24,1500) 'Motor2 siempre inicia apagado}
+pauseS(2) 'ahora le pongo 2s nomas for the lolz
 
 repeat
-
-  'contar los 5 seg
-  ''repeat
-
-  pauseS(3) 'ahora le pongo 3s nomas for the lolz
 
   {esto si funciona habria que cambiar por las constantes mencionadas arriba para mejor implementacion}
 
 
-  while ina[21] and ina[22] ''no hay kill switch todavia solo con los sens de linea estamos
-    if ina[16]
-      izquierda90
+  while lineaIzq and lineaDer ''Negro es 1, blacno es 0
+    if sIzq
+      izquierda90 ''tal vez y por la posicion del sensor conviene girar un poco mas de 90 deg
 
-    elseif ina[20]
+    elseif sDer
       derecha90
 
-    elseif ina[17]
+    elseif sFrenteIzq
       izquierdacorto
       adelante
 
-    elseif ina[19]
+    elseif sFrenteDer
       derechacorto
       adelante
 
-    elseif ina[18]
+    elseif sFrente
       frenterapido
     else
-      frente
+      frente ''aca en vez de ir para el frente lento, podria quedarse quieto y buscar girando o algo asi, a discutir
 
 
 
@@ -126,9 +143,8 @@ repeat
               izquierdacorto
             else
               adelante}
-
-    {PULSOUT(23,1000) 'Motor derecha   verif  ''Esto deberia de ser un atras"
-    PULSOUT(24,1000)} 'Motor izquierda verif
+    
+    {creo que algo bueno aca seria preguntar cual de los dos sensores fue el que leyo y a partir de eso corregir, o si no que general sea dar una media vuelta y buscar de nuevo}
     atras180
 
 
@@ -136,137 +152,142 @@ repeat
 pub lecturas
   ''lectura de sensores
   repeat
-    valor := ina[16]
-    valor1 := ina[17]
-    valor2 := ina[18]
-    valor3 := ina[19]
-    valor4 := ina[20]
-    valor5 := ina[21]
-    valor6 := ina[22]
+    sIzq := ina[left]
+    sFrenteIzq := ina[frontLeft]
+    sFrente := ina[front]
+    sFrenteDer := ina[frontRight]
+    sDer := ina[right]
+    lineaIzq := ina[leftLine]
+    lineaDer := ina[rightLine]
+    startSignal := ina[killSwitchStart]
 
 
 pub selfStop | TimeBase, OneMs, Time
+
+  {esto es una medida de seguridad ya que ahora no tenemos 
+  kill switch; la idea es que si paso un tiempo suficiente para 
+  interpretar que "ya se cayo del ring" que se apague nomas al 
+  leer los valores}
 
   TimeBase := cnt
   OneMS = clkfreq/1000
   repeat
     Time = cnt
-    if (Time - TimeBase) > 100 * OneMS and (ina[24] or ina[25])
-      PULSOUT(23,1500)
-      PULSOUT(24,1500)                                              ' Set to output
-      !outa[30] ''Aca ponemos en low y con esto puenteado deberia de reiniciar el botcito
-
-
-
-
-
-
+    if (Time - TimeBase) > (100 * OneMS) and (lineaIzq==0 or lineaDer==0)
+    parar
+    reboot ''se supone que el reboot apaga el parallax, mirar referencia
 
 
 pub adelante        ''Verificado
 {if (ina[0]==0 or ina[1]==0)        'esperamos por el sensor de lineas 1 es negro
     repeat 40
-            PULSOUT(23,600) 'Motor derecha  verif
-            PULSOUT(24,900) 'Motor izquierda  verif
+            PULSOUT(mIzq,600) 'Motor derecha  verif
+            PULSOUT(mDer,900) 'Motor izquierda  verif
     repeat 40
-          PULSOUT(23,580) 'Motor derecha     ver
-          PULSOUT(24,580) 'Motor izquierda   ver
-  PULSOUT(23,750) 'Motor derecha  ver
-  PULSOUT(24,750) 'Motor izquierda ver
+          PULSOUT(mIzq,580) 'Motor derecha     ver
+          PULSOUT(mDer,580) 'Motor izquierda   ver
+  PULSOUT(mIzq,750) 'Motor derecha  ver
+  PULSOUT(mDer,750) 'Motor izquierda ver
   pause(20)
 else
-            PULSOUT(23,800) 'Motor derecha     verif
-            PULSOUT(24,700) 'Motor izquierda   verif}
-  PULSOUT(23,1700)
-  PULSOUT(24,1700)
+            PULSOUT(mIzq,800) 'Motor derecha     verif
+            PULSOUT(mDer,700) 'Motor izquierda   verif}
+  PULSOUT(mIzq,1700)
+  PULSOUT(mDer,1700)
 
 pub adelanterapido
 {if (ina[0]==0 or ina[1]==0)        'esperamos por el sensor de lineas 1 es negro
       repeat 40
-              PULSOUT(23,600) 'Motor derecha  ver
-              PULSOUT(24,900) 'Motor izquierda  ver
+              PULSOUT(mIzq,600) 'Motor derecha  ver
+              PULSOUT(mDer,900) 'Motor izquierda  ver
       repeat 40
-          PULSOUT(23,580) 'Motor derecha     ver
-          PULSOUT(24,580) 'Motor izquierda   ver
-      PULSOUT(23,750) 'Motor derecha  ver
-      PULSOUT(24,750) 'Motor izquierda ver
+          PULSOUT(mIzq,580) 'Motor derecha     ver
+          PULSOUT(mDer,580) 'Motor izquierda   ver
+      PULSOUT(mIzq,750) 'Motor derecha  ver
+      PULSOUT(mDer,750) 'Motor izquierda ver
       pause(20)
 else
-              PULSOUT(23,850) 'Motor derecha     ver
-              PULSOUT(24,650) 'Motor izquierda   ver}
-  PULSOUT(23,2000)
-  PULSOUT(24,2000)
+              PULSOUT(mIzq,850) 'Motor derecha     ver
+              PULSOUT(mDer,650) 'Motor izquierda   ver}
+  PULSOUT(mIzq,2000)
+  PULSOUT(mDer,2000)
 
 pub derechacorto | OneMS, TimeBase, Time
 
 'esto podria ponerse en 0 nomas uno y el otro activar como para tener mejor rapidez de reaccion, cuestion de probar
+
+{esto es otra forma de hacer el derecha corto, comparar con el que se tiene en el main}
 
 TimeBase := cnt
 OneMS = clkfreq/1000
 
 repeat until !ina[20] 'no se si es esta la notacion (hasta que ya no lea)
   Time := cnt
-  PULSOUT(23,1040)
-  PULSOUT(24,1040)
+  PULSOUT(mIzq,1040)
+  PULSOUT(mDer,1040)
   if (Time - TimeBase) > 15 * OneMS
     quit
-PULSOUT(23,1500)
-PULSOUT(24,1500)
+PULSOUT(mIzq,1500)
+PULSOUT(mDer,1500)
 
 
 pub izquierdacorto | OneMS, TimeBase, Time
 {repeat 1
-  PULSOUT(23,980) 'Motor derecha     ver
-  PULSOUT(24,980) 'Motor izquierda   ver
+  PULSOUT(mIzq,980) 'Motor derecha     ver
+  PULSOUT(mDer,980) 'Motor izquierda   ver
   pause(20)
-PULSOUT(23,750) 'Motor derecha  ver
-PULSOUT(24,750) 'Motor izquierda ver
+PULSOUT(mIzq,750) 'Motor derecha  ver
+PULSOUT(mDer,750) 'Motor izquierda ver
 pause(20)}
 TimeBase := cnt
 OneMS = clkfreq/1000
 
 repeat until !ina[18] 'no se si es esta la notacion (hasta que ya no lea)
   Time := cnt
-  PULSOUT(23,1960)
-  PULSOUT(24,1960)
+  PULSOUT(mIzq,1960)
+  PULSOUT(mDer,1960)
   if (Time - TimeBase) > 15 * OneMS
     quit
-PULSOUT(23,1500)
-PULSOUT(24,1500)
+PULSOUT(mIzq,1500)
+PULSOUT(mDer,1500)
 
 
 pub derecha90 | OneMS, TimeBase    ''comprobar
 TimeBase := cnt
 OneMS := clkfreq / 1000
 
-PULSOUT(23,1300)
-PULSOUT(24,1300)
+PULSOUT(mIzq,1300)
+PULSOUT(mDer,1300)
 waitcn(TimeBase += 30*OneMS) 'ajustar
-PULSOUT(23,1500)
-PULSOUT(24,1500)
+PULSOUT(mIzq,1500)
+PULSOUT(mDer,1500)
 'pause(20)
 
 pub izquierda90 | OneMS, TimeBase 'comprobar
 TimeBase := cnt
 OneMS := clkfreq / 1000
 
-PULSOUT(23,1900)
-PULSOUT(24,1900)
+PULSOUT(mIzq,1900)
+PULSOUT(mDer,1900)
 waitcnt(TimeBase += 30*OneMS) 'ajustasr
-PULSOUT(23,1500)
-PULSOUT(24,1500)
+PULSOUT(mIzq,1500)
+PULSOUT(mDer,1500)
 'pause(20)
 
 pub atras180 | OneMS, TimeBase ''comprobar
 TimeBase := cnt
 OneMS := clkfreq / 1000
 
-PULSOUT(23,1200)
-PULSOUT(24,1200)
+PULSOUT(mIzq,1200)
+PULSOUT(mDer,1200)
 waitcnt(TimeBase += 40*OneMS) 'ese 40 es un valor random despues vamos a tener que ajustar
-PULSOUT(23,1500)
-PULSOUT(24,1500)
+PULSOUT(mIzq,1500)
+PULSOUT(mDer,1500)
 'pause(20)
+
+pub parar
+  PULSOUT(mIzq,1500)
+  PULSOUT(mDer,1500)
 
 
 PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
@@ -275,7 +296,7 @@ PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
    Produces an opposite pulse on the pin for the duration in 2uS increments
    Smallest value is 10 at clkfreq = 80Mhz
    Largest value is around 50 seconds at 80Mhz.
-     BS2.PULSOUT(2300)   ' 1 mS pulse
+     BS2.Pulsout(mIzq00)   ' 1 mS pulse
 }}
   ClkCycles := (Duration *us) #> cntMin                    ' se pone directo '
                                                            ' - inst. time, min cntMin
