@@ -21,20 +21,35 @@ CON
   _clkmode = xtal1 + pll16x    ''Configura como modo oscilador a crystal y multiplicador por 16 para obtener 80Mhz
   _xinfreq = 5_000_000         ''Configura el valor del crystal
    cntMin     = 400      ' Minimum waitcnt value to prevent lock-up   {381 dicen que funca}
+
+  left = 16 ''Estos son los sensores Pepper
+  frontLeft = 17
+  front = 18
+  frontRight = 19
+  right = 20
+
+  leftLine = 21 ''Estos son los sensores de linea
+  rightLine = 22
+
+  mIzq = 23 ''Los pines para los motores
+  mDer = 24
+
+  killSwitchStart = 25 ''El pin para usar el comando de activacion (para empezar)
+  ''aca habria que poner mas pines para las estrategias
+
 var
-   long us, ban
+   long us,sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, lineaIzq, lineaDer, startSignal
    long Stack[1000] 'Stack space for new cog
 PUB Principal
-dira[3..4]~~
-outa[3..4]~    ''Salidas motor
+dira[23..24]~~    ''Salidas motor
+dira[16..22]~   ''Entradas sensores
 us:= clkfreq / 1_000_000                  ' Clock cycles for 1 us
 {PULSOUT(5,750) 'Motor derecha
 PULSOUT(6,750) 'Motor izquierda}
 
-ban:=0
 
-PULSOUT(3,1500)
-PULSOUT(4,1500)
+PULSOUT(mIzq,1500)
+PULSOUT(mDer,1500)
 {cognew (control, @Stack)} ''habilitamos un cog con 1000 espacios para stack
 {Print("Hola mundo")}
 repeat
@@ -47,11 +62,11 @@ repeat
   PULSOUT(9,1600)
   PULSOUT(10,1600)
   pauseSec(5)}
-  PULSOUT(3,1500)
-  PULSOUT(4,1500)
+  PULSOUT(mIzq,1500)
+  PULSOUT(mDer,1500)
   pauseSec(2)
-  PULSOUT(3,1550)
-  PULSOUT(4,1550)
+  PULSOUT(mIzq,1550)
+  PULSOUT(mDer,1550)
   pauseSec(2)
 
 

@@ -4,8 +4,8 @@
 {Todos los valores de tiempo para los giros,etc todavia no se probaron y se tienen que corregir, el valor correcto tendremos con los imanes recien
 me parece}
 
-{Para los valores que se le pasa al pulsout creo que lo ideal 
-seria poner en una escala de -100% a 100% y el pulsout ya haga 
+{Para los valores que se le pasa al pulsout creo que lo ideal
+seria poner en una escala de -100% a 100% y el pulsout ya haga
 la conversion, para mejor lectura y dimension de las velocidades}
 
 {Prueba de sensores
@@ -33,14 +33,14 @@ pin 30: pin de control para resetear de una el botcito
 
 {OJO que solo hasta el pin numero 27 se puede usar, luego son pines especiales
  el pin num 15 parece que no funciona (segun pruebas de korea) asi que mejor no usar
- del 0 al 14 los pines son resistivos y no se tanto como afecta eso por eso estaba saltando, pero creo que no hay drama de los siguientes sensores 
- montar en esos pines}  
+ del 0 al 14 los pines son resistivos y no se tanto como afecta eso por eso estaba saltando, pero creo que no hay drama de los siguientes sensores
+ montar en esos pines}
 
 CON
   _clkmode = xtal1 + pll16x    'Configura como modo oscilador a crystal y multiplicador por 16 para obtener 80Mhz; que hace el xtal1??
   _xinfreq = 5_000_000         'Configura el valor del crystal
   cntMin     = 400      ' Minimum waitcnt value to prevent lock-up
-  
+
   left = 16 ''Estos son los sensores Pepper
   frontLeft = 17
   front = 18
@@ -70,8 +70,6 @@ dira[23..24]~~    ''Salidas motor
 dira[16..22]~   ''Entradas sensores
 us:= clkfreq / 1_000_000                  ' Clock cycles for 1 us
 
-dira[23..24]~~    ''Salidas motor
-dira[16..22]~   ''Entradas sensores
 
 
 outa[mIzq]~
@@ -143,7 +141,7 @@ repeat
               izquierdacorto
             else
               adelante}
-    
+
     {creo que algo bueno aca seria preguntar cual de los dos sensores fue el que leyo y a partir de eso corregir, o si no que general sea dar una media vuelta y buscar de nuevo}
     atras180
 

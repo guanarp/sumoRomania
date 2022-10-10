@@ -23,14 +23,24 @@ CON
   mIzq = 23 ''Los pines para los motores
   mDer = 24
 
+  topLeft = 25
+  topFront = 26
+  topRight = 27 ''Ult pin de IO
+
+  rfA = 0
+  rfB = 1
+  rfC = 2
+  rfD = 3
+
 var
-long a,us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, sLineaIzq, sLineaDer
+long a,us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, sLineaIzq, sLineaDer, sTopIzq, sTopFrente, sTopDer, sRfA, sRfB, sRfC, sRfD
 long Stack[1000] 'Stack space for new cog
 long Stack2[1000] 'Stack space for new cog
 
 PUB Principal
 dira[23..24]~~    ''Salidas motor
 dira[16..22]~   ''Entradas sensores
+dira[25..27]~ ''los keyence
 ''a:=ina[16]
 us := clkfreq / 1_000_000
 outa[mIzq]~
@@ -47,41 +57,62 @@ Serial.start(31, 30, 0, 9600) ''Que onda esto no se de donde sale el start y sus
     PULSOUT(mIzq,1500) 'Motor1 siempre inicia apagado
     PULSOUT(mDer,1500) 'Motor2 siempre inicia apagado
     ''valor:=ina[16]
-    Serial.str(string("Sensor RF: "))
-    Serial.Dec(sDer)
+    Serial.str(string("Sensor RFA: "))
+    Serial.Dec(sRfA)
     Serial.tx(13) ''El tx13 es un enter nomas
     ''valor1:=ina[17]
+    Serial.str(string("Sensor RFB: "))
+    Serial.Dec(sRfB)
+    Serial.tx(13)
+    Serial.str(string("Sensor RFC: "))
+    Serial.Dec(sRfC)
+    Serial.tx(13)
+    ''valor2:=ina[18]
+    Serial.str(string("Sensor RFD: "))
+    Serial.Dec(sRfD)
+    Serial.tx(13)
     Serial.str(string("Linea1: "))
     Serial.Dec(sLineaIzq)
     Serial.tx(13)
-    ''valor2:=ina[18]
     Serial.str(string("Linea2: "))
     Serial.Dec(sLineaDer)
     Serial.tx(13)
     ''valor3:=ina[19]
-    Serial.str(string("sensor presencia: "))
+
+    Serial.str(string("Sensor presencia Izq: "))
     Serial.Dec(sIzq)
     Serial.tx(13)
-    ''valor4:=ina[20]
+
+    Serial.str(string("Sensor presencia frenteIzq: "))
+    Serial.Dec(sFrenteIzq)
+    Serial.tx(13)
+
+    Serial.str(string("Sensor presencia Frente: "))
+    Serial.Dec(sFrente)
+    Serial.tx(13)
+
+    Serial.str(string("Sensor presencia Frente derecha : "))
+    Serial.Dec(sFrenteDer)
+    Serial.tx(13)
+
+    Serial.str(string("Sensor presencia Der: "))
+    Serial.Dec(sDer)
+    Serial.tx(13)
+
+    Serial.str(string("Sensor arriba izq: "))
+    Serial.Dec(sTopIzq)
+    Serial.tx(13)
+
+    Serial.str(string("Sensor arriba frente: "))
+    Serial.Dec(sTopFrente)
+    Serial.tx(13)
+
+    Serial.str(string("Sensor arriba derecha: "))
+    Serial.Dec(sTopDer)
+    Serial.tx(13)
+
     Serial.str(string("==========================="))
     Serial.tx(13)
-    {Serial.str(string("el valor del sensor4 es"))
-    Serial.Dec(valor4)
-    Serial.tx(13)
-    valor5:=ina[21]
-    Serial.str(string("el valor del sensor5 es"))
-    Serial.Dec(valor5)
-    Serial.tx(13)
-    valor6:=ina[22]
-    Serial.str(string("el valor del sensor6 es"))
-    Serial.Dec(valor6)
-    Serial.tx(13)
-    valor7:=ina[23]
-    Serial.str(string("el valor del sensor7 es"))
-    Serial.Dec(valor7)
-    Serial.tx(13)
-    Serial.str(string(" "))
-    Serial.tx(13)}
 
     ''outa[LED] := ina[SENSOR]     ''lee el sensor y le pasa el valor el led
     pauseMs(1000)
@@ -96,6 +127,13 @@ pub lecturas
     sDer := ina[20]
     sLineaIzq := ina[21]
     sLineaDer := ina[22]
+    sTopIzq := ina[25]
+    sTopFrente := ina[26]
+    sTopDer := ina[27]
+    sRfA := ina[rfA]
+    sRfB := ina[rfB]
+    sRfC := ina[rfC]
+    sRfD := ina[rfD]
 
 
 
@@ -172,4 +210,3 @@ PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
   !outa[Pin]                                               ' set to opposite state
   waitcnt(ClkCycles + TimeBase)                                 ' wait until clk gets there
   !outa[Pin]                                               ' return to orig. state                                 'creo que aca no afecta hacer esto porque una vez nomas se hace no es repetitivo
-

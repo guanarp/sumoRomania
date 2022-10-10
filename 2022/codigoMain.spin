@@ -4,8 +4,8 @@
 {Todos los valores de tiempo para los giros,etc todavia no se probaron y se tienen que corregir, el valor correcto tendremos con los imanes recien
 me parece}
 
-{Para los valores que se le pasa al pulsout creo que lo ideal 
-seria poner en una escala de -100% a 100% y el pulsout ya haga 
+{Para los valores que se le pasa al pulsout creo que lo ideal
+seria poner en una escala de -100% a 100% y el pulsout ya haga
 la conversion, para mejor lectura y dimension de las velocidades}
 
 {Prueba de sensores
@@ -33,7 +33,7 @@ pin 30: pin de control para resetear de una el botcito
 
 {OJO que solo hasta el pin numero 27 se puede usar, luego son pines especiales
  el pin num 15 parece que no funciona (segun pruebas de korea) asi que mejor no usar
- del 0 al 14 los pines son resistivos y no se tanto como afecta eso por eso estaba saltando, pero creo que no hay drama de los siguientes sensores 
+ del 0 al 14 los pines son resistivos y no se tanto como afecta eso por eso estaba saltando, pero creo que no hay drama de los siguientes sensores
  montar en esos pines}
 
 CON
@@ -53,13 +53,20 @@ CON
   mIzq = 23 ''Los pines para los motores
   mDer = 24
 
-  killSwitchStart = 25 ''El pin para usar el comando de activacion (para empezar)
+  killSwitchStart = 14 ''El pin para usar el comando de activacion (para empezar)
   ''aca habria que poner mas pines para las estrategias
+  topLeft = 25
+  topFront = 26
+  topRight = 27 ''Ult Pin de IO
+
+  rfA = 0 ''Ahora podemos usar uno de ellos como start y el otro como kill
+  rfB = 1
+  rfC = 2
+  rfD = 3
 
 
 var
-   long us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, lineaIzq, lineaDer, startSignal
-   byte ban
+   long us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, lineaIzq, lineaDer, startSignal, sTopIzq, sTopFrente, sTopDer, sRfA, sRfB, sRfC, sRfD
    long Stack[1000] 'Stack space for new cog
 
 
@@ -67,10 +74,9 @@ PUB Principal
 ''dira[0..3]~     ''Entradas sensores de lineas y pines de control A y B
 dira[23..24]~~    ''Salidas motor
 dira[16..22]~   ''Entradas sensores
+dira[25..27]~ ''Los keyence 
 us:= clkfreq / 1_000_000                  ' Clock cycles for 1 us
 
-dira[23..24]~~    ''Salidas motor
-dira[16..22]~   ''Entradas sensores
 
 
 outa[mIzq]~
@@ -84,8 +90,7 @@ cognew(lecturas, @Stack) ''Habilito un nucleo para que en paralelo ejecute la le
 
 
 repeat until startSignal ''Para prender
-    PULSOUT(mIzq,1500) 'Motor1 siempre inicia apagado
-    PULSOUT(mDer,1500) 'Motor2 siempre inicia apagado
+  parar
     ''idea: como aca en paralelo esta leyendo todos los sesnores, ya se puede elegir una materia aca mismo luego
 
 
@@ -93,7 +98,7 @@ pauseS(5) ''tiempo reglamentado
 
 repeat ''este bucle si ya es de trabajo del bot
 
-  {Hasta ahora esta estrategia tiene solamente todos los sensores peppers, hay que poner despues un arbol de decisiones para los keyence 
+  {Hasta ahora esta estrategia tiene solamente todos los sensores peppers, hay que poner despues un arbol de decisiones para los keyence
   que van a estar arriba}
 
   {Trata primero de corregir los lugares que mas tardaria en colocarse bien, lo ultimo que decide es ir de frente}
@@ -104,18 +109,31 @@ repeat ''este bucle si ya es de trabajo del bot
     elseif sDer
       derecha90
 
-    elseif sFrenteIzq
+    elseif sTopIzq
+      izquierda45
+      parar
+
+    elseif sTopDer
+      derecha45
+      parar
+    
+    elseif sTopFrente
+      adelante
+      ''parar se podria hacer que vaya un poco al frente y luego quedarse quieto
+
+    ''aca es otro if porque esto no es exclusivo con los sensores anteriores
+    if sFrenteIzq
       izquierdacorto
-      adelante
+      ''adelante
 
-    elseif sFrenteDer
+    if sFrenteDer
       derechacorto
-      adelante
+      ''adelante
 
-    elseif sFrente
-      frenterapido
+    if sFrente
+      adelanterapido
     else
-      frente ''aca en vez de ir para el frente lento, podria quedarse quieto y buscar girando o algo asi, a discutir
+      parar ''aca en vez de ir para el frente lento, podria quedarse quieto y buscar girando o algo asi, a discutir
 
 
 
@@ -166,7 +184,14 @@ pub lecturas
     lineaIzq := ina[leftLine]
     lineaDer := ina[rightLine]
     startSignal := ina[killSwitchStart]
-    
+    sTopIzq := ina[topLeft]
+    sTopFrente := ina[topFront]
+    sTopDer := ina[topRight]
+    sRfA := ina[rfA]
+    sRfB := ina[rfB]
+    sRfC := ina[rfC]
+    sRfD := ina[rfD]
+
 
 
 pub adelante        ''Verificado
@@ -274,6 +299,10 @@ waitcnt(TimeBase += 40*OneMS) 'ese 40 es un valor random despues vamos a tener q
 PULSOUT(mIzq,1500)
 PULSOUT(mDer,1500)
 'pause(20)
+
+pub parar
+  PULSOUT(mIzq,1500)
+  PULSOUT(mDer,1500)
 
 
 PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
