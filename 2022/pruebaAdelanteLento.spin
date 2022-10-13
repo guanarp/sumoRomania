@@ -1,4 +1,5 @@
 {Ignorar todavia el comentario, hay que cambiar a nuesstro pineado porque todo se cambio de lugar}
+{hacer con pasos de 50}
 
 {A toda la implementacion de codigo le falta los sensores Keyence}
 {Todos los valores de tiempo para los giros,etc todavia no se probaron y se tienen que corregir, el valor correcto tendremos con los imanes recien
@@ -59,19 +60,21 @@ CON
   topFront = 26
   topRight = 27 ''Ult Pin de IO
 
-  rfA = 0 ''Ahora podemos usar uno de ellos como start y el otro como kill
-  rfB = 1
-  rfC = 2
-  rfD = 3
+  rfA = 8 ''Ahora podemos usar uno de ellos como start y el otro como kill
+  rfB = 9
+  rfC = 10
+  rfD = 11
 
 
 var
    long us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, lineaIzq, lineaDer, startSignal, sTopIzq, sTopFrente, sTopDer, sRfA, sRfB, sRfC, sRfD, killSwitch
    long Stack[1000] 'Stack space for new cog
-   long Stack2[100]
+   long Stack2[1000]
 
 PUB Principal
 ''dira[0..3]~     ''Entradas sensores de lineas y pines de control A y B
+dira[0..6]~~
+dira[8..14]~
 dira[23..24]~~    ''Salidas motor
 dira[16..22]~   ''Entradas sensores
 dira[25..27]~ ''Los keyence
@@ -87,89 +90,62 @@ PULSOUT(mDer,1500) 'Motor2 siempre inicia apagado
 
 
 cognew(lecturas, @Stack) ''Habilito un nucleo para que en paralelo ejecute la lectura de todos los sensores
-cognew(kill, @Stack2)
-
-repeat until startSignal ''Para prender
-  parar
-    ''idea: como aca en paralelo esta leyendo todos los sesnores, ya se puede elegir una materia aca mismo luego
+cognew(lecturas2, @Stack2)
 
 
-pauseS(5) ''tiempo reglamentado
 
-repeat until killSwitch ''este bucle si ya es de trabajo del bot
 
-  {Hasta ahora esta estrategia tiene solamente todos los sensores peppers, hay que poner despues un arbol de decisiones para los keyence
-  que van a estar arriba}
+repeat
+  repeat until startSignal==1 ''Para prender
+    parar
+      ''idea: como aca en paralelo esta leyendo todos los sesnores, ya se puede elegir una materia aca mismo luego
 
-  {Trata primero de corregir los lugares que mas tardaria en colocarse bien, lo ultimo que decide es ir de frente}
-  repeat while (lineaIzq and lineaDer) ''Negro es 1, blacno es 0
-    if sIzq
-      izquierda90 ''tal vez y por la posicion del sensor conviene girar un poco mas de 90 deg
 
-    elseif sDer
-      derecha90
+  'pauseS(5) ''tiempo reglamentado
 
-    elseif sTopIzq
-      izquierda45
-      parar
+  repeat until killSwitch==1 ''este bucle si ya es de trabajo del bot
 
-    elseif sTopDer
-      derecha45
-      parar
+    {Hasta ahora esta estrategia tiene solamente todos los sensores peppers, hay que poner despues un arbol de decisiones para los keyence
+    que van a estar arriba}
 
-    elseif sTopFrente
+    {Trata primero de corregir los lugares que mas tardaria en colocarse bien, lo ultimo que decide es ir de frente}
+    ''repeat while (lineaIzq and lineaDer) ''Negro es 1, blacno es 0
+    adelanteLento
+
+
+
+
+    'aca hay que pensar bien como se puede aprovechar el paralelismo para los sensores
+
+
+
+    {esta parte no es mi codigo, a cambiar todavia. La idea seria despues meter un selector de estrategia tambien}
+    {if ina[19]==1    ' Sensor en frente; no se si hace falta el ==1, creo que lo ideal seria aca que este tenga corta distancia (media); u con otro sensor confirmar para que sea rapido
+      'adelanterapido
       adelante
-      ''parar se podria hacer que vaya un poco al frente y luego quedarse quieto
-
-    ''aca es otro if porque esto no es exclusivo con los sensores anteriores
-    if sFrenteIzq
-      izquierdacorto
-      ''adelante
-
-    if sFrenteDer
-      derechacorto
-      ''adelante
-
-    if sFrente
-      adelanterapido
     else
-      parar ''aca en vez de ir para el frente lento, podria quedarse quieto y buscar girando o algo asi, a discutir
-
-
-
-
-
-  'aca hay que pensar bien como se puede aprovechar el paralelismo para los sensores
-
-
-
-  {esta parte no es mi codigo, a cambiar todavia. La idea seria despues meter un selector de estrategia tambien}
-  {if ina[19]==1    ' Sensor en frente; no se si hace falta el ==1, creo que lo ideal seria aca que este tenga corta distancia (media); u con otro sensor confirmar para que sea rapido
-    'adelanterapido
-    adelante
-  else
-    if ina[22]==1    ' Sensor Objetros derecha (0=nada 1=objeto)
-      derecha90
-    else
-      if ina[23]==1    '      Sensor Objetros izquierda (0=nada 1=objeto)
-        izquierda90
+      if ina[22]==1    ' Sensor Objetros derecha (0=nada 1=objeto)
+        derecha90
       else
-        if ina[16]==1    '     Sensor Objetros atras (0=nada 1=objeto)
-          atras180
+        if ina[23]==1    '      Sensor Objetros izquierda (0=nada 1=objeto)
+          izquierda90
         else
-          if ina[17]==1    ' Sensor Objetros frente derecha (0=nada 1=objeto)
-            derechacorto
+          if ina[16]==1    '     Sensor Objetros atras (0=nada 1=objeto)
+            atras180
           else
-            if ina[20]==1    '     Sensor Objetros frente izquierda (0=nada 1=objeto)
-              izquierdacorto
+            if ina[17]==1    ' Sensor Objetros frente derecha (0=nada 1=objeto)
+              derechacorto
             else
-              adelante}
+              if ina[20]==1    '     Sensor Objetros frente izquierda (0=nada 1=objeto)
+                izquierdacorto
+              else
+                adelante}
 
 
-    {creo que algo bueno aca seria preguntar cual de los dos sensores fue el que leyo y a partir de eso corregir, o si no que general sea dar una media vuelta y buscar de nuevo}
-    atras180
-    {PULSOUT(mIzq,1000) 'Motor derecha   verif  ''Esto deberia de ser un atras"
-    PULSOUT(mDer,1000)} 'Motor izquierda verif
+      {creo que algo bueno aca seria preguntar cual de los dos sensores fue el que leyo y a partir de eso corregir, o si no que general sea dar una media vuelta y buscar de nuevo}
+    ''atras180
+      {PULSOUT(mIzq,1000) 'Motor derecha   verif  ''Esto deberia de ser un atras"
+      PULSOUT(mDer,1000)} 'Motor izquierda verif
 
 
 
@@ -187,19 +163,25 @@ pub lecturas
     sTopIzq := ina[topLeft]
     sTopFrente := ina[topFront]
     sTopDer := ina[topRight]
+
+
+pub lecturas2
+  ''lectura de sensores
+  repeat
     sRfA := ina[rfA]
     sRfB := ina[rfB]
     sRfC := ina[rfC]
     sRfD := ina[rfD]
     ''provisoriamente es lo siguiente
-    startSignal := sRfA
-    killSwitch := sRfB
+    startSignal := ina[rfA]
+    killSwitch := ina[rfB]
 
 
-pub kill
+
+{pub kill
   repeat
     if killSwitch
-      reboot
+      parar}
 
 
 pub adelante        ''Verificado
@@ -235,6 +217,25 @@ else
               PULSOUT(mDer,650) 'Motor izquierda   ver}
   PULSOUT(mIzq,2000)
   PULSOUT(mDer,2000)
+
+pub adelanteLento
+{if (ina[0]==0 or ina[1]==0)        'esperamos por el sensor de lineas 1 es negro
+      repeat 40
+              PULSOUT(mIzq,600) 'Motor derecha  ver
+              PULSOUT(mDer,900) 'Motor izquierda  ver
+      repeat 40
+          PULSOUT(mIzq,580) 'Motor derecha     ver
+          PULSOUT(mDer,580) 'Motor izquierda   ver
+      PULSOUT(mIzq,750) 'Motor derecha  ver
+      PULSOUT(mDer,750) 'Motor izquierda ver
+      pause(20)
+else
+              PULSOUT(mIzq,850) 'Motor derecha     ver
+              PULSOUT(mDer,650) 'Motor izquierda   ver}
+  ''PULSOUT(mIzq,1350)
+  ''PULSOUT(mDer,1650)
+  PULSOUT2(mIzq,30)
+  PULSOUT2(mDer,-30)
 
 pub derechacorto | OneMS, TimeBase, Time
 
@@ -343,8 +344,15 @@ PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
    Largest value is around 50 seconds at 80Mhz.
      BS2.PULSOUT(mIzq00)   ' 1 mS pulse
 }}
+
+
+  {if Value >= 0
+    Duration := 1500 + 5*Value
+  else
+    Duration := 1500 - 5*Value}
+
   ClkCycles := (Duration *us) #> cntMin                    ' se pone directo '
-                                                           ' - inst. time, min cntMin
+                                                        ' - inst. time, min cntMin
   dira[Pin]~~                                              ' Set to output
   !outa[Pin]                                               ' set to opposite state
   waitcnt(ClkCycles + cnt)                                 ' wait until clk gets there
@@ -356,6 +364,43 @@ PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
   ClkCycles := (Duration * us) #> cntMin
   waitcnt(TimeBase += ClkCycles)
   !outa[Pin]}                                   'creo que aca no afecta hacer esto porque una vez nomas se hace no es repetitivo
+
+
+PUB PULSOUT2(Pin,Val)  | ClkCycles, TimeBase , Duration
+{{
+   esta descripcion es dudosa pero bueno
+   Produces an opposite pulse on the pin for the duration in 2uS increments
+   Smallest value is 10 at clkfreq = 80Mhz
+   Largest value is around 50 seconds at 80Mhz.
+     BS2.PULSOUT(mIzq00)   ' 1 mS pulse
+}}
+  Duration := 0
+
+  if Val >= 0
+    if Val >100
+      Duration := 2000
+    else
+      Duration := 1500 + 5*Val
+  else
+    if Val < -100
+      Duration := 1000
+    else
+      Duration := 1500 - 5*Val
+
+  ClkCycles := (Duration *us) #> cntMin                    ' se pone directo '
+                                                        ' - inst. time, min cntMin
+  dira[Pin]~~                                              ' Set to output
+  !outa[Pin]                                               ' set to opposite state
+  waitcnt(ClkCycles + cnt)                                 ' wait until clk gets there
+  !outa[Pin]
+                                                          ' return to orig. state
+  {dira[Pin]
+  !outa[Pin]
+  TimeBase := cnt
+  ClkCycles := (Duration * us) #> cntMin
+  waitcnt(TimeBase += ClkCycles)
+  !outa[Pin]}                                   'creo que aca no afecta hacer esto porque una vez nomas se hace no es repetitivo
+
 
 
 PUB pauseS(time) | TimeBase, OneSec              '' Pause for number of seconds

@@ -27,13 +27,13 @@ CON
   topFront = 26
   topRight = 27 ''Ult pin de IO
 
-  rfA = 0
-  rfB = 1
-  rfC = 2
-  rfD = 3
+  rfA = 8
+  rfB = 9
+  rfC = 10
+  rfD = 11
 
 var
-long a,us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, sLineaIzq, sLineaDer, sTopIzq, sTopFrente, sTopDer, sRfA, sRfB, sRfC, sRfD
+long a,us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, sLineaIzq, sLineaDer, sTopIzq, sTopFrente, sTopDer, sRfA, sRfB, sRfC, sRfD,startSignal, killSwitch
 long Stack[1000] 'Stack space for new cog
 long Stack2[1000] 'Stack space for new cog
 
@@ -71,6 +71,13 @@ Serial.start(31, 30, 0, 9600) ''Que onda esto no se de donde sale el start y sus
     Serial.str(string("Sensor RFD: "))
     Serial.Dec(sRfD)
     Serial.tx(13)
+    Serial.str(string("Sensor start: "))
+    Serial.Dec(startSignal)
+    Serial.tx(13)
+    Serial.str(string("Sensor kill: "))
+    Serial.Dec(killSwitch)
+    Serial.tx(13)
+
     Serial.str(string("Linea1: "))
     Serial.Dec(sLineaIzq)
     Serial.tx(13)
@@ -134,6 +141,8 @@ pub lecturas
     sRfB := ina[rfB]
     sRfC := ina[rfC]
     sRfD := ina[rfD]
+    startSignal := sRfA
+    killSwitch := sRfB
 
 
 
