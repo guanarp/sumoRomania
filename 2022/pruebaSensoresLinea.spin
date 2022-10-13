@@ -109,9 +109,9 @@ repeat
     que van a estar arriba}
 
     {Trata primero de corregir los lugares que mas tardaria en colocarse bien, lo ultimo que decide es ir de frente}
-    ''repeat while (lineaIzq and lineaDer) ''Negro es 1, blacno es 0
-    adelanteLento
-
+    repeat while (lineaIzq and lineaDer) ''Negro es 1, blacno es 0
+      adelanteLento
+    atras180
 
 
 
