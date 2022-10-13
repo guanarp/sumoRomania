@@ -350,12 +350,12 @@ PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
     Duration := 1500 + 5*Value
   else
     Duration := 1500 - 5*Value}
-
+  TimeBase := cnt
   ClkCycles := (Duration *us) #> cntMin                    ' se pone directo '
                                                         ' - inst. time, min cntMin
   dira[Pin]~~                                              ' Set to output
   !outa[Pin]                                               ' set to opposite state
-  waitcnt(ClkCycles + cnt)                                 ' wait until clk gets there
+  waitcnt(TimeBase += ClkCycles)                                 ' wait until clk gets there
   !outa[Pin]
                                                           ' return to orig. state
   {dira[Pin]
