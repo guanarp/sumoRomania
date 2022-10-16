@@ -11,26 +11,26 @@ CON
   _xinfreq = 5_000_000         ''Configura el valor del crystal
   cntMin     = 400
 
-  left = 16 ''Estos son los sensores Pepper
-  frontLeft = 17
-  front = 18
-  frontRight = 19
-  right = 20
+  left = 13 ''Estos son los sensores Pepper
+  frontLeft = 8
+  front = 9
+  frontRight = 10
+  right = 11
 
-  leftLine = 21 ''Estos son los sensores de linea
-  rightLine = 22
+  leftLine = 4 ''Estos son los sensores de linea
+  rightLine = 5
 
   mIzq = 23 ''Los pines para los motores
   mDer = 24
 
-  topLeft = 25
-  topFront = 26
-  topRight = 27 ''Ult pin de IO
+  topLeft = 20
+  topFront = 21
+  topRight = 22 ''Ult pin de IO
 
-  rfA = 8
-  rfB = 9
-  rfC = 10
-  rfD = 11
+  rfA = 0
+  rfB = 1
+  rfC = 2
+  rfD = 3
 
 var
 long a,us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, sLineaIzq, sLineaDer, sTopIzq, sTopFrente, sTopDer, sRfA, sRfB, sRfC, sRfD,startSignal, killSwitch
@@ -38,15 +38,19 @@ long Stack[1000] 'Stack space for new cog
 long Stack2[1000] 'Stack space for new cog
 
 PUB Principal
+dira[0..5]~
+dira[8..13]~
+dira[20..22]~
 dira[23..24]~~    ''Salidas motor
-dira[16..22]~   ''Entradas sensores
-dira[25..27]~ ''los keyence
+''dira[16..22]~   ''Entradas sensores
+''dira[25..27]~ ''los keyence
 ''a:=ina[16]
 us := clkfreq / 1_000_000
 outa[mIzq]~
 outa[mDer]~ ''Poniendo a 0 por seguridad
 
-cognew(lecturas, @Stack) ''Aca estoy llamando a un nucleo para que me haga las lecturas de los sensores
+cognew(lecturas, @Stack) ''Habilito un nucleo para que en paralelo ejecute la lectura de todos los sensores
+cognew(lecturas2, @Stack2)
 
 PULSOUT(mIzq,1500) 'Motor1 siempre inicia apagado
 PULSOUT(mDer,1500) 'Motor2 siempre inicia apagado
@@ -122,27 +126,31 @@ Serial.start(31, 30, 0, 9600) ''Que onda esto no se de donde sale el start y sus
     Serial.tx(13)
 
     ''outa[LED] := ina[SENSOR]     ''lee el sensor y le pasa el valor el led
-    pauseMs(1000)
+    pauseMs(1500)
 
 pub lecturas
   ''lectura de sensores
   repeat
-    sIzq := ina[16]
-    sFrenteIzq := ina[17]
-    sFrente := ina[18]
-    sFrenteDer := ina[19]
-    sDer := ina[20]
-    sLineaIzq := ina[21]
-    sLineaDer := ina[22]
-    sTopIzq := ina[25]
-    sTopFrente := ina[26]
-    sTopDer := ina[27]
-    sRfA := ina[rfA]
-    sRfB := ina[rfB]
-    sRfC := ina[rfC]
-    sRfD := ina[rfD]
-    startSignal := sRfA
-    killSwitch := sRfB
+    sIzq := ina[left]
+    sFrenteIzq := ina[frontLeft]
+    sFrente := ina[front]
+    sFrenteDer :=  ina[frontRight]
+    sDer :=  ina[right]
+    slineaIzq := ina[leftLine]
+    slineaDer := ina[rightLine]
+    startSignal := ina[rfA]
+    sTopIzq := ina[topLeft]
+    sTopFrente := ina[topFront]
+    sTopDer := ina[topRight]
+
+pub lecturas2
+  sRfA := ina[rfA]
+  sRfB := ina[rfB]
+  sRfC := ina[rfC]
+  sRfD := ina[rfD]
+  ''provisoriamente es lo siguiente
+  startSignal := sRfA
+  killSwitch := sRfC
 
 
 

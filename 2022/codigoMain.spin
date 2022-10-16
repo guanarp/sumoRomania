@@ -41,25 +41,23 @@ CON
   _xinfreq = 5_000_000         ''Configura el valor del crystal
   cntMin     = 400
 
-  left = 16 ''Estos son los sensores Pepper
-  frontLeft = 17
-  front = 18
-  frontRight = 19
-  right = 20
+  left = 13 ''Estos son los sensores Pepper
+  frontLeft = 8
+  front = 9
+  frontRight = 10
+  right = 11
 
-  leftLine = 21 ''Estos son los sensores de linea
-  rightLine = 22
+  leftLine = 4 ''Estos son los sensores de linea
+  rightLine = 5
 
   mIzq = 23 ''Los pines para los motores
   mDer = 24
 
-  killSwitchStart = 14 ''El pin para usar el comando de activacion (para empezar)
-  ''aca habria que poner mas pines para las estrategias
-  topLeft = 25
-  topFront = 26
-  topRight = 27 ''Ult Pin de IO
+  topLeft = 20
+  topFront = 21
+  topRight = 22 ''Ult pin de IO
 
-  rfA = 0 ''Ahora podemos usar uno de ellos como start y el otro como kill
+  rfA = 0
   rfB = 1
   rfC = 2
   rfD = 3
@@ -87,7 +85,7 @@ PULSOUT(mDer,1500) 'Motor2 siempre inicia apagado
 
 
 cognew(lecturas, @Stack) ''Habilito un nucleo para que en paralelo ejecute la lectura de todos los sensores
-cognew(kill, @Stack2)
+cognew(lecturas2, @Stack2)
 
 repeat until startSignal ''Para prender
   parar
@@ -103,10 +101,10 @@ repeat until killSwitch ''este bucle si ya es de trabajo del bot
 
   {Trata primero de corregir los lugares que mas tardaria en colocarse bien, lo ultimo que decide es ir de frente}
   repeat while (lineaIzq and lineaDer) ''Negro es 1, blacno es 0
-    if sIzq
+    if sIzq==0
       izquierda90 ''tal vez y por la posicion del sensor conviene girar un poco mas de 90 deg
 
-    elseif sDer
+    elseif sDer==0
       derecha90
 
     elseif sTopIzq
@@ -122,11 +120,11 @@ repeat until killSwitch ''este bucle si ya es de trabajo del bot
       ''parar se podria hacer que vaya un poco al frente y luego quedarse quieto
 
     ''aca es otro if porque esto no es exclusivo con los sensores anteriores
-    if sFrenteIzq
+    if sFrenteIzq==0
       izquierdacorto
       ''adelante
 
-    if sFrenteDer
+    if sFrenteDer==0
       derechacorto
       ''adelante
 
@@ -176,30 +174,35 @@ repeat until killSwitch ''este bucle si ya es de trabajo del bot
 pub lecturas
   ''lectura de sensores
   repeat
-    sIzq := NOT ina[left]
-    sFrenteIzq := NOT ina[frontLeft]
-    sFrente := NOT ina[front]
-    sFrenteDer := NOT ina[frontRight]
-    sDer := NOT ina[right]
+    sIzq := ina[left]
+    sFrenteIzq := ina[frontLeft]
+    sFrente := ina[front]
+    sFrenteDer := ina[frontRight]
+    sDer := ina[right]
     lineaIzq := ina[leftLine]
     lineaDer := ina[rightLine]
     startSignal := ina[killSwitchStart]
     sTopIzq := ina[topLeft]
     sTopFrente := ina[topFront]
     sTopDer := ina[topRight]
+
+
+pub lecturas2
+  ''lectura de sensores
+  repeat
     sRfA := ina[rfA]
     sRfB := ina[rfB]
     sRfC := ina[rfC]
     sRfD := ina[rfD]
     ''provisoriamente es lo siguiente
-    startSignal := sRfA
-    killSwitch := sRfB
+    startSignal := ina[rfA]
+    killSwitch := ina[rfC]
 
 
-pub kill
+{pub kill
   repeat
     if killSwitch
-      reboot
+      reboot}
 
 
 pub adelante        ''Verificado

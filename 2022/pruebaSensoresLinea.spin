@@ -42,28 +42,26 @@ CON
   _xinfreq = 5_000_000         ''Configura el valor del crystal
   cntMin     = 400
 
-  left = 16 ''Estos son los sensores Pepper
-  frontLeft = 17
-  front = 18
-  frontRight = 19
-  right = 20
+  left = 13 ''Estos son los sensores Pepper
+  frontLeft = 8
+  front = 9
+  frontRight = 10
+  right = 11
 
-  leftLine = 21 ''Estos son los sensores de linea
-  rightLine = 22
+  leftLine = 4 ''Estos son los sensores de linea
+  rightLine = 5
 
   mIzq = 23 ''Los pines para los motores
   mDer = 24
 
-  killSwitchStart = 14 ''El pin para usar el comando de activacion (para empezar)
-  ''aca habria que poner mas pines para las estrategias
-  topLeft = 25
-  topFront = 26
-  topRight = 27 ''Ult Pin de IO
+  topLeft = 20
+  topFront = 21
+  topRight = 22 ''Ult pin de IO
 
-  rfA = 8 ''Ahora podemos usar uno de ellos como start y el otro como kill
-  rfB = 9
-  rfC = 10
-  rfD = 11
+  rfA = 0
+  rfB = 1
+  rfC = 2
+  rfD = 3
 
 
 var
@@ -152,11 +150,11 @@ repeat
 pub lecturas
   ''lectura de sensores
   repeat
-    sIzq := NOT ina[left]
-    sFrenteIzq := NOT ina[frontLeft]
-    sFrente := NOT ina[front]
-    sFrenteDer := NOT ina[frontRight]
-    sDer := NOT ina[right]
+    sIzq := ina[left]
+    sFrenteIzq := ina[frontLeft]
+    sFrente := ina[front]
+    sFrenteDer := ina[frontRight]
+    sDer := ina[right]
     lineaIzq := ina[leftLine]
     lineaDer := ina[rightLine]
     startSignal := ina[killSwitchStart]
@@ -174,7 +172,7 @@ pub lecturas2
     sRfD := ina[rfD]
     ''provisoriamente es lo siguiente
     startSignal := ina[rfA]
-    killSwitch := ina[rfB]
+    killSwitch := ina[rfC]
 
 
 
