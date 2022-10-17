@@ -87,88 +87,43 @@ PULSOUT(mDer,1500) 'Motor2 siempre inicia apagado
 cognew(lecturas, @Stack) ''Habilito un nucleo para que en paralelo ejecute la lectura de todos los sensores
 cognew(lecturas2, @Stack2)
 
-repeat until startSignal ''Para prender
+'' Comentar todos menos el que se quiere probar y los pause que estan antes y despues
+repeat 3
+  {adelante
+  pauseSec(1)
   parar
-    ''idea: como aca en paralelo esta leyendo todos los sesnores, ya se puede elegir una materia aca mismo luego
+  pauseSec(3)
 
+  adelanteRapido
+  pauseSec(1)
+  parar
+  pauseSec(1)
 
-pauseS(5) ''tiempo reglamentado
+  derechacorto
+  pauseSec(1)
+  parar
+  pauseSec(1)
 
-repeat until killSwitch ''este bucle si ya es de trabajo del bot
+  izquierdacorto
+  pauseSec(1)
+  parar
+  pauseSec(1)}
 
-  {Hasta ahora esta estrategia tiene solamente todos los sensores peppers, hay que poner despues un arbol de decisiones para los keyence
-  que van a estar arriba}
-
-  {Trata primero de corregir los lugares que mas tardaria en colocarse bien, lo ultimo que decide es ir de frente}
-  repeat while (lineaIzq and lineaDer) ''Negro es 1, blacno es 0
-    if sIzq==0
-      izquierda90 ''tal vez y por la posicion del sensor conviene girar un poco mas de 90 deg
-
-    elseif sDer==0
-      derecha90
-
-    elseif sTopIzq
-      izquierda45
-      parar
-
-    elseif sTopDer
-      derecha45
-      parar
-
-    elseif sTopFrente
-      adelante
-      ''parar se podria hacer que vaya un poco al frente y luego quedarse quieto
-
-    ''aca es otro if porque esto no es exclusivo con los sensores anteriores
-    if sFrenteIzq==0
-      izquierdacorto
-      ''adelante
-
-    if sFrenteDer==0
-      derechacorto
-      ''adelante
-
-    if sFrente
-      adelanterapido
-    else
-      parar ''aca en vez de ir para el frente lento, podria quedarse quieto y buscar girando o algo asi, a discutir
-
-
-
-
-
-  'aca hay que pensar bien como se puede aprovechar el paralelismo para los sensores
-
-
-
-  {esta parte no es mi codigo, a cambiar todavia. La idea seria despues meter un selector de estrategia tambien}
-  {if ina[19]==1    ' Sensor en frente; no se si hace falta el ==1, creo que lo ideal seria aca que este tenga corta distancia (media); u con otro sensor confirmar para que sea rapido
-    'adelanterapido
-    adelante
-  else
-    if ina[22]==1    ' Sensor Objetros derecha (0=nada 1=objeto)
-      derecha90
-    else
-      if ina[23]==1    '      Sensor Objetros izquierda (0=nada 1=objeto)
-        izquierda90
-      else
-        if ina[16]==1    '     Sensor Objetros atras (0=nada 1=objeto)
-          atras180
-        else
-          if ina[17]==1    ' Sensor Objetros frente derecha (0=nada 1=objeto)
-            derechacorto
-          else
-            if ina[20]==1    '     Sensor Objetros frente izquierda (0=nada 1=objeto)
-              izquierdacorto
-            else
-              adelante}
-
-
-    {creo que algo bueno aca seria preguntar cual de los dos sensores fue el que leyo y a partir de eso corregir, o si no que general sea dar una media vuelta y buscar de nuevo}
-    atras180
-    {PULSOUT(mIzq,1000) 'Motor derecha   verif  ''Esto deberia de ser un atras"
-    PULSOUT(mDer,1000)} 'Motor izquierda verif
-
+  derecha90
+  pauseSec(1)
+  parar
+  pauseSec(1)
+  {
+  derecha45
+  pauseSec(1)
+  izquierda90
+  pauseSec(1)
+  izquierda45
+  pauseSec(1)
+  atras180
+  pauseSec(1)
+  parar
+  pauseSec(1)}
 
 
 pub lecturas
@@ -246,10 +201,11 @@ pub derechacorto | OneMS, TimeBase, Time
   TimeBase := cnt
   OneMS := clkfreq/1000
 
+  PULSOUT(mIzq,1960)
+  PULSOUT(mDer,1040)
+
   repeat until sFrenteDer==1 'no se si es esta la notacion (hasta que ya no lea)
     Time := cnt
-    PULSOUT(mIzq,1960)
-    PULSOUT(mDer,1040)
     if (Time - TimeBase) > 400 * OneMS
       quit
 
@@ -268,11 +224,12 @@ pub izquierdacorto | OneMS, TimeBase, Time
   TimeBase := cnt
   OneMS := clkfreq/1000
 
-  repeat until NOT sFrenteIzq 'no se si es esta la notacion (hasta que ya no lea)
+  PULSOUT(mIzq,1040)
+  PULSOUT(mDer,1960)
+
+  repeat until sFrenteIzq == 1 'no se si es esta la notacion (hasta que ya no lea)
     Time := cnt
-    PULSOUT(mIzq,1960)
-    PULSOUT(mDer,1960)
-    if (Time - TimeBase) > 15 * OneMS
+    if (Time - TimeBase) > 5000 * OneMS
       quit
   PULSOUT(mIzq,1500)
   PULSOUT(mDer,1500)
@@ -282,7 +239,7 @@ pub derecha90 | OneMS, TimeBase    ''comprobar
   TimeBase := cnt
   OneMS := clkfreq / 1000
 
-  PULSOUT(mIzq,1300)
+  PULSOUT(mIzq,1700)
   PULSOUT(mDer,1300)
   waitcnt(TimeBase += 30*OneMS) 'ajustar
   PULSOUT(mIzq,1500)
@@ -293,7 +250,7 @@ pub derecha45 | OneMS, TimeBase    ''comprobar
   TimeBase := cnt
   OneMS := clkfreq / 1000
 
-  PULSOUT(mIzq,1300)
+  PULSOUT(mIzq,1700)
   PULSOUT(mDer,1300)
   waitcnt(TimeBase += 15*OneMS) 'ajustar
   PULSOUT(mIzq,1500)
@@ -304,7 +261,7 @@ pub izquierda90 | OneMS, TimeBase 'comprobar
   TimeBase := cnt
   OneMS := clkfreq / 1000
 
-  PULSOUT(mIzq,1900)
+  PULSOUT(mIzq,1100)
   PULSOUT(mDer,1900)
   waitcnt(TimeBase += 30*OneMS) 'ajustasr
   PULSOUT(mIzq,1500)
@@ -315,7 +272,7 @@ pub izquierda45 | OneMS, TimeBase 'comprobar
   TimeBase := cnt
   OneMS := clkfreq / 1000
 
-  PULSOUT(mIzq,1900)
+  PULSOUT(mIzq,1100)
   PULSOUT(mDer,1900)
   waitcnt(TimeBase += 15*OneMS) 'ajustasr
   PULSOUT(mIzq,1500)
@@ -326,7 +283,7 @@ pub atras180 | OneMS, TimeBase ''comprobar
 TimeBase := cnt
 OneMS := clkfreq / 1000
 
-PULSOUT(mIzq,1200)
+PULSOUT(mIzq,1800)
 PULSOUT(mDer,1200)
 waitcnt(TimeBase += 40*OneMS) 'ese 40 es un valor random despues vamos a tener que ajustar
 PULSOUT(mIzq,1500)
@@ -361,7 +318,7 @@ PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
   !outa[Pin]}                                   'creo que aca no afecta hacer esto porque una vez nomas se hace no es repetitivo
 
 
-PUB pauseS(time) | TimeBase, OneSec              '' Pause for number of seconds
+PUB pauseSec(time) | TimeBase, OneSec              '' Pause for number of seconds
   if time > 0
     TimeBase := cnt
     OneSec := clkfreq

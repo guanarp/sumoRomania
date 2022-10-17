@@ -144,10 +144,10 @@ pub lecturas
     sTopDer := ina[topRight]
 
 pub lecturas2
-  sRfA := ina[rfA]
-  sRfB := ina[rfB]
-  sRfC := ina[rfC]
-  sRfD := ina[rfD]
+  sRfA := ina[0]
+  sRfB := ina[1]
+  sRfC := ina[2]
+  sRfD := ina[3]
   ''provisoriamente es lo siguiente
   startSignal := sRfA
   killSwitch := sRfC
