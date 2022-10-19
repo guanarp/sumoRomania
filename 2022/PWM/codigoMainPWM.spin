@@ -51,14 +51,17 @@ CON
   rightLine = 5
 
   mIzq = 23 ''Los pines para los motores
-  mDer = 24
+  mDer = 27
+
+  signoIzq = 25 ''hay dos pines mas que hay que soldar para este caso
+  signoDer = 24
 
   topLeft = 20
   topFront = 21
   topRight = 22 ''Ult pin de IO
 
   rfA = 0
- 
+
 
 
 var
@@ -112,11 +115,11 @@ repeat until killSwitch ''este bucle si ya es de trabajo del bot
 
     elseif sTopIzq
       izquierda45PWM
-      parar
+      pararPWM
 
     elseif sTopDer
       derecha45PWM
-      parar
+      pararPWM
 
     elseif sTopFrente
       adelantePWM
@@ -215,7 +218,7 @@ pub adelantePWM
   outa[signoDer]~~
   set_duty(1,5)
   set_duty(2,5)
-  
+
 
 pub adelanterapido
   PULSOUT(mIzq,2000)
@@ -236,7 +239,7 @@ pub adelanteLentoPWM
   outa[signoDer]~~
   set_duty(1,2)
   set_duty(2,2)
-  
+
 
 pub derechacorto | OneMS, TimeBase, Time
 
@@ -260,19 +263,19 @@ pub derechacortoPWM | OneMS, TimeBase, Time
   OneMS := clkfreq/1000
   repeat until NOT sFrenteDer 'no se si es esta la notacion (hasta que ya no lea)
     Time := cnt
-    
+
     outa[signoIzq]~~
     outa[signoDer]~
     set_duty(1,10)
     set_duty(2,10)
-  
+
     if (Time - TimeBase) > 15 * OneMS
       quit
-    
+
     outa[signoIzq]~~
     outa[signoDer]~~
 
-  
+
 
 
 pub izquierdacorto | OneMS, TimeBase, Time
@@ -293,15 +296,15 @@ pub izquierdacortoPWM | OneMS, TimeBase, Time
   OneMS := clkfreq/1000
   repeat until NOT sFrenteDer 'no se si es esta la notacion (hasta que ya no lea)
     Time := cnt
-    
+
     outa[signoIzq]~
     outa[signoDer]~~
     set_duty(1,10)
     set_duty(2,10)
-  
+
     if (Time - TimeBase) > 15 * OneMS
       quit
-    
+
     outa[signoIzq]~~
     outa[signoDer]~~
 
@@ -325,9 +328,9 @@ pub derecha90PWM | OneMS, TimeBase    ''comprobar
   outa[signoDer]~
   set_duty(1,10)
   set_duty(2,10)
-  
+
   waitcnt(TimeBase += 30*OneMS) 'ajustar
-  
+
   set_duty(1,0)
   set_duty(2,0)
   'pause(20)
@@ -353,7 +356,7 @@ pub derecha45PWM | OneMS, TimeBase    ''comprobar
   set_duty(2,10)
 
   waitcnt(TimeBase += 15*OneMS) 'ajustar
-  
+
   set_duty(1,0)
   set_duty(2,0)
 
@@ -376,11 +379,11 @@ pub izquierda90PWM | OneMS, TimeBase 'comprobar
   outa[signoDer]~~
   set_duty(1,10)
   set_duty(2,10)
-  
+
   waitcnt(TimeBase += 30*OneMS) 'ajustar
-  
+
   set_duty(1,0)
-  set_duty(2,0) 
+  set_duty(2,0)
 
 pub izquierda45 | OneMS, TimeBase 'comprobar
   TimeBase := cnt
@@ -401,11 +404,11 @@ pub izquierda45PWM | OneMS, TimeBase 'comprobar
   outa[signoDer]~~
   set_duty(1,10)
   set_duty(2,10)
-  
+
   waitcnt(TimeBase += 15*OneMS) 'ajustar
-  
+
   set_duty(1,0)
-  set_duty(2,0)   
+  set_duty(2,0)
 
 pub atras180 | OneMS, TimeBase ''comprobar
     TimeBase := cnt

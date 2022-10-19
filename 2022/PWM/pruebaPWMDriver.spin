@@ -32,10 +32,10 @@ CON
   rightLine = 5
 
   mIzq = 23 ''Los pines para los motores
-  mDer = 24
+  mDer = 27
 
   signoIzq = 25 ''hay dos pines mas que hay que soldar para este caso
-  signoDer = 26
+  signoDer = 24
 
 
   topLeft = 20

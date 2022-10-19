@@ -52,16 +52,17 @@ CON
   rightLine = 5
 
   mIzq = 23 ''Los pines para los motores
-  mDer = 24
+  mDer = 27
+
   signoIzq = 25 ''hay dos pines mas que hay que soldar para este caso
-  signoDer = 26
+  signoDer = 24
 
   topLeft = 20
   topFront = 21
   topRight = 22 ''Ult pin de IO
 
   rfA = 0
-  
+
 
 
 var
@@ -107,7 +108,7 @@ cognew(kill, @killstack)
 
 repeat
   repeat until startSignal==1 ''Para prender
-    parar
+    pararPWM
       ''idea: como aca en paralelo esta leyendo todos los sesnores, ya se puede elegir una materia aca mismo luego
 
 
@@ -118,40 +119,40 @@ repeat
     {Trata primero de corregir los lugares que mas tardaria en colocarse bien, lo ultimo que decide es ir de frente}
     repeat while (lineaIzq==1 and lineaDer==0) ''Negro es 1, blacno es 0
       if sIzq==0
-        izquierda90 ''tal vez y por la posicion del sensor conviene girar un poco mas de 90 deg
+        izquierda90PWM ''tal vez y por la posicion del sensor conviene girar un poco mas de 90 deg
 
       elseif sDer==0
-        derecha90
+        derecha90PWM
 
       elseif sTopIzq
-        izquierda45
-        parar
+        izquierda45PWM
+        pararPWM
 
       elseif sTopDer
-        derecha45
-        parar
+        derecha45PWM
+        pararPWM
 
       elseif sTopFrente
-        adelante
+        adelantePWM
         ''parar se podria hacer que vaya un poco al frente y luego quedarse quieto
 
       ''aca es otro if porque esto no es exclusivo con los sensores anteriores
       if sFrenteIzq==0
-        izquierdacorto
+        izquierdacortoPWM
         ''adelante
 
       if sFrenteDer==0
-        derechacorto
+        derechacortoPWM
         ''adelante
 
       if sFrente
-        adelanterapido
+        adelanterapidoPWM
       else
-        parar ''aca en vez de ir para el frente lento, podria quedarse quieto y buscar girando o algo asi, a discutir
+        pararPWM ''aca en vez de ir para el frente lento, podria quedarse quieto y buscar girando o algo asi, a discutir
 
 
 
-    
+
 
 
 
@@ -207,7 +208,7 @@ pub adelantePWM
   outa[signoDer]~~
   set_duty(1,5)
   set_duty(2,5)
-  
+
 
 pub adelanterapido
   PULSOUT(mIzq,2000)
@@ -228,7 +229,7 @@ pub adelanteLentoPWM
   outa[signoDer]~~
   set_duty(1,2)
   set_duty(2,2)
-  
+
 
 pub derechacorto | OneMS, TimeBase, Time
 
@@ -252,19 +253,19 @@ pub derechacortoPWM | OneMS, TimeBase, Time
   OneMS := clkfreq/1000
   repeat until NOT sFrenteDer 'no se si es esta la notacion (hasta que ya no lea)
     Time := cnt
-    
+
     outa[signoIzq]~~
     outa[signoDer]~
     set_duty(1,10)
     set_duty(2,10)
-  
+
     if (Time - TimeBase) > 15 * OneMS
       quit
-    
+
     outa[signoIzq]~~
     outa[signoDer]~~
 
-  
+
 
 
 pub izquierdacorto | OneMS, TimeBase, Time
@@ -285,15 +286,15 @@ pub izquierdacortoPWM | OneMS, TimeBase, Time
   OneMS := clkfreq/1000
   repeat until NOT sFrenteDer 'no se si es esta la notacion (hasta que ya no lea)
     Time := cnt
-    
+
     outa[signoIzq]~
     outa[signoDer]~~
     set_duty(1,10)
     set_duty(2,10)
-  
+
     if (Time - TimeBase) > 15 * OneMS
       quit
-    
+
     outa[signoIzq]~~
     outa[signoDer]~~
 
@@ -317,9 +318,9 @@ pub derecha90PWM | OneMS, TimeBase    ''comprobar
   outa[signoDer]~
   set_duty(1,10)
   set_duty(2,10)
-  
+
   waitcnt(TimeBase += 30*OneMS) 'ajustar
-  
+
   set_duty(1,0)
   set_duty(2,0)
   'pause(20)
@@ -345,7 +346,7 @@ pub derecha45PWM | OneMS, TimeBase    ''comprobar
   set_duty(2,10)
 
   waitcnt(TimeBase += 15*OneMS) 'ajustar
-  
+
   set_duty(1,0)
   set_duty(2,0)
 
@@ -368,11 +369,11 @@ pub izquierda90PWM | OneMS, TimeBase 'comprobar
   outa[signoDer]~~
   set_duty(1,10)
   set_duty(2,10)
-  
+
   waitcnt(TimeBase += 30*OneMS) 'ajustar
-  
+
   set_duty(1,0)
-  set_duty(2,0) 
+  set_duty(2,0)
 
 pub izquierda45 | OneMS, TimeBase 'comprobar
   TimeBase := cnt
@@ -393,11 +394,11 @@ pub izquierda45PWM | OneMS, TimeBase 'comprobar
   outa[signoDer]~~
   set_duty(1,10)
   set_duty(2,10)
-  
+
   waitcnt(TimeBase += 15*OneMS) 'ajustar
-  
+
   set_duty(1,0)
-  set_duty(2,0)   
+  set_duty(2,0)
 
 pub atras180 | OneMS, TimeBase ''comprobar
 TimeBase := cnt
