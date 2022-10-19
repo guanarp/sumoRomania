@@ -27,10 +27,10 @@ CON
   topFront = 21
   topRight = 22 ''Ult pin de IO
 
-  rfA = 0
-  rfB = 1
-  rfC = 2
-  rfD = 3
+  rfA = 1
+  ''rfB = 1
+  ''rfC = 2
+  ''rfD = 3
 
 var
 long a,us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, sLineaIzq, sLineaDer, sTopIzq, sTopFrente, sTopDer, sRfA, sRfB, sRfC, sRfD,startSignal, killSwitch
@@ -48,6 +48,10 @@ dira[23..24]~~    ''Salidas motor
 us := clkfreq / 1_000_000
 outa[mIzq]~
 outa[mDer]~ ''Poniendo a 0 por seguridad
+
+sRfA :=1
+startSignal := 0
+killSwitch := 0
 
 cognew(lecturas, @Stack) ''Habilito un nucleo para que en paralelo ejecute la lectura de todos los sensores
 cognew(lecturas2, @Stack2)
@@ -144,13 +148,19 @@ pub lecturas
     sTopDer := ina[topRight]
 
 pub lecturas2
-  sRfA := ina[0]
-  sRfB := ina[1]
-  sRfC := ina[2]
-  sRfD := ina[3]
-  ''provisoriamente es lo siguiente
-  startSignal := sRfA
-  killSwitch := sRfC
+  repeat
+    sRfA := ina[rfA]
+    ''sRfB := ina[rfB]
+    ''sRfC := ina[rfC]
+    ''sRfD := ina[rfD]
+    ''provisoriamente es lo siguiente
+    if sRfA == 0
+      if startSignal ==0
+        startSignal := 1
+        killSwitch := 0
+      else
+        startSignal := 0
+        killSwitch := 1
 
 
 

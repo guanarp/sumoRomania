@@ -1,5 +1,4 @@
 {Ignorar todavia el comentario, hay que cambiar a nuesstro pineado porque todo se cambio de lugar}
-{hacer con pasos de 50}
 
 {A toda la implementacion de codigo le falta los sensores Keyence}
 {Todos los valores de tiempo para los giros,etc todavia no se probaron y se tienen que corregir, el valor correcto tendremos con los imanes recien
@@ -59,9 +58,7 @@ CON
   topRight = 22 ''Ult pin de IO
 
   rfA = 0
-  rfB = 1
-  rfC = 2
-  rfD = 3
+ 
 
 
 var
@@ -69,10 +66,14 @@ var
    long Stack[1000] 'Stack space for new cog
    long Stack2[1000]
 
+   long  duty1
+   long  duty2
+   long  period
+
+   long  pwmstack[32]
+
 PUB Principal
 ''dira[0..3]~     ''Entradas sensores de lineas y pines de control A y B
-dira[0..6]~~
-dira[8..14]~
 dira[23..24]~~    ''Salidas motor
 dira[16..22]~   ''Entradas sensores
 dira[25..27]~ ''Los keyence
@@ -90,60 +91,86 @@ PULSOUT(mDer,1500) 'Motor2 siempre inicia apagado
 cognew(lecturas, @Stack) ''Habilito un nucleo para que en paralelo ejecute la lectura de todos los sensores
 cognew(lecturas2, @Stack2)
 
+repeat until startSignal ''Para prender
+  parar
+    ''idea: como aca en paralelo esta leyendo todos los sesnores, ya se puede elegir una materia aca mismo luego
 
 
 
-repeat
-  repeat until startSignal ''Para prender
-    parar
-      ''idea: como aca en paralelo esta leyendo todos los sesnores, ya se puede elegir una materia aca mismo luego
+repeat until killSwitch ''este bucle si ya es de trabajo del bot
 
+  {Hasta ahora esta estrategia tiene solamente todos los sensores peppers, hay que poner despues un arbol de decisiones para los keyence
+  que van a estar arriba}
 
-  'pauseS(5) ''tiempo reglamentado
+  {Trata primero de corregir los lugares que mas tardaria en colocarse bien, lo ultimo que decide es ir de frente}
+  repeat while (lineaIzq and lineaDer) ''Negro es 1, blacno es 0
+    if sIzq==0
+      izquierda90PWM ''tal vez y por la posicion del sensor conviene girar un poco mas de 90 deg
 
-  repeat until killSwitch ''este bucle si ya es de trabajo del bot
+    elseif sDer==0
+      derecha90PWM
 
-    {Hasta ahora esta estrategia tiene solamente todos los sensores peppers, hay que poner despues un arbol de decisiones para los keyence
-    que van a estar arriba}
+    elseif sTopIzq
+      izquierda45PWM
+      parar
 
-    {Trata primero de corregir los lugares que mas tardaria en colocarse bien, lo ultimo que decide es ir de frente}
-    ''repeat while (lineaIzq and lineaDer) ''Negro es 1, blacno es 0
-    adelanteLento
+    elseif sTopDer
+      derecha45PWM
+      parar
 
+    elseif sTopFrente
+      adelantePWM
+      ''parar se podria hacer que vaya un poco al frente y luego quedarse quieto
 
+    ''aca es otro if porque esto no es exclusivo con los sensores anteriores
+    if sFrenteIzq==0
+      izquierdacortoPWM
+      ''adelante
 
+    if sFrenteDer==0
+      derechacortoPWM
+      ''adelante
 
-    'aca hay que pensar bien como se puede aprovechar el paralelismo para los sensores
-
-
-
-    {esta parte no es mi codigo, a cambiar todavia. La idea seria despues meter un selector de estrategia tambien}
-    {if ina[19]==1    ' Sensor en frente; no se si hace falta el ==1, creo que lo ideal seria aca que este tenga corta distancia (media); u con otro sensor confirmar para que sea rapido
-      'adelanterapido
-      adelante
+    if sFrente
+      adelanterapidoPWM
     else
-      if ina[22]==1    ' Sensor Objetros derecha (0=nada 1=objeto)
-        derecha90
+      pararPWM ''aca en vez de ir para el frente lento, podria quedarse quieto y buscar girando o algo asi, a discutir
+
+
+
+
+
+  'aca hay que pensar bien como se puede aprovechar el paralelismo para los sensores
+
+
+
+  {esta parte no es mi codigo, a cambiar todavia. La idea seria despues meter un selector de estrategia tambien}
+  {if ina[19]==1    ' Sensor en frente; no se si hace falta el ==1, creo que lo ideal seria aca que este tenga corta distancia (media); u con otro sensor confirmar para que sea rapido
+    'adelanterapido
+    adelante
+  else
+    if ina[22]==1    ' Sensor Objetros derecha (0=nada 1=objeto)
+      derecha90
+    else
+      if ina[23]==1    '      Sensor Objetros izquierda (0=nada 1=objeto)
+        izquierda90
       else
-        if ina[23]==1    '      Sensor Objetros izquierda (0=nada 1=objeto)
-          izquierda90
+        if ina[16]==1    '     Sensor Objetros atras (0=nada 1=objeto)
+          atras180
         else
-          if ina[16]==1    '     Sensor Objetros atras (0=nada 1=objeto)
-            atras180
+          if ina[17]==1    ' Sensor Objetros frente derecha (0=nada 1=objeto)
+            derechacorto
           else
-            if ina[17]==1    ' Sensor Objetros frente derecha (0=nada 1=objeto)
-              derechacorto
+            if ina[20]==1    '     Sensor Objetros frente izquierda (0=nada 1=objeto)
+              izquierdacorto
             else
-              if ina[20]==1    '     Sensor Objetros frente izquierda (0=nada 1=objeto)
-                izquierdacorto
-              else
-                adelante}
+              adelante}
 
 
-      {creo que algo bueno aca seria preguntar cual de los dos sensores fue el que leyo y a partir de eso corregir, o si no que general sea dar una media vuelta y buscar de nuevo}
-    ''atras180
-      {PULSOUT(mIzq,1000) 'Motor derecha   verif  ''Esto deberia de ser un atras"
-      PULSOUT(mDer,1000)} 'Motor izquierda verif
+    {creo que algo bueno aca seria preguntar cual de los dos sensores fue el que leyo y a partir de eso corregir, o si no que general sea dar una media vuelta y buscar de nuevo}
+    atras180PWM
+    {PULSOUT(mIzq,1000) 'Motor derecha   verif  ''Esto deberia de ser un atras"
+    PULSOUT(mDer,1000)} 'Motor izquierda verif
 
 
 
@@ -157,7 +184,7 @@ pub lecturas
     sDer := ina[right]
     lineaIzq := ina[leftLine]
     lineaDer := ina[rightLine]
-    startSignal := ina[killSwitchStart]
+    startSignal := ina[rfA]
     sTopIzq := ina[topLeft]
     sTopFrente := ina[topFront]
     sTopDer := ina[topRight]
@@ -167,73 +194,49 @@ pub lecturas2
   ''lectura de sensores
   repeat
     sRfA := ina[rfA]
-    sRfB := ina[rfB]
-    sRfC := ina[rfC]
-    sRfD := ina[rfD]
     ''provisoriamente es lo siguiente
     startSignal := ina[rfA]
     killSwitch := ina[rfC]
 
 
-
 {pub kill
   repeat
     if killSwitch
-      parar}
+      reboot}
 
 
-pub adelante        ''Verificado
-{if (ina[0]==0 or ina[1]==0)        'esperamos por el sensor de lineas 1 es negro
-    repeat 40
-            PULSOUT(mIzq,600) 'Motor derecha  verif
-            PULSOUT(mDer,900) 'Motor izquierda  verif
-    repeat 40
-          PULSOUT(mIzq,580) 'Motor derecha     ver
-          PULSOUT(mDer,580) 'Motor izquierda   ver
-  PULSOUT(mIzq,750) 'Motor derecha  ver
-  PULSOUT(mDer,750) 'Motor izquierda ver
-  pause(20)
-else
-            PULSOUT(mIzq,800) 'Motor derecha     verif
-            PULSOUT(mDer,700) 'Motor izquierda   verif}
-  PULSOUT(mIzq,1600)
+pub adelante
+
+  PULSOUT(mIzq,1400)
   PULSOUT(mDer,1600)
 
+pub adelantePWM
+  outa[signoIzq]~~ ''~~ es alto; ~ es bajo
+  outa[signoDer]~~
+  set_duty(1,5)
+  set_duty(2,5)
+  
+
 pub adelanterapido
-{if (ina[0]==0 or ina[1]==0)        'esperamos por el sensor de lineas 1 es negro
-      repeat 40
-              PULSOUT(mIzq,600) 'Motor derecha  ver
-              PULSOUT(mDer,900) 'Motor izquierda  ver
-      repeat 40
-          PULSOUT(mIzq,580) 'Motor derecha     ver
-          PULSOUT(mDer,580) 'Motor izquierda   ver
-      PULSOUT(mIzq,750) 'Motor derecha  ver
-      PULSOUT(mDer,750) 'Motor izquierda ver
-      pause(20)
-else
-              PULSOUT(mIzq,850) 'Motor derecha     ver
-              PULSOUT(mDer,650) 'Motor izquierda   ver}
   PULSOUT(mIzq,2000)
   PULSOUT(mDer,2000)
 
+pub adelanterapidoPWM
+  outa[signoIzq]~~
+  outa[signoDer]~~
+  set_duty(1,10)
+  set_duty(2,10)
+
 pub adelanteLento
-{if (ina[0]==0 or ina[1]==0)        'esperamos por el sensor de lineas 1 es negro
-      repeat 40
-              PULSOUT(mIzq,600) 'Motor derecha  ver
-              PULSOUT(mDer,900) 'Motor izquierda  ver
-      repeat 40
-          PULSOUT(mIzq,580) 'Motor derecha     ver
-          PULSOUT(mDer,580) 'Motor izquierda   ver
-      PULSOUT(mIzq,750) 'Motor derecha  ver
-      PULSOUT(mDer,750) 'Motor izquierda ver
-      pause(20)
-else
-              PULSOUT(mIzq,850) 'Motor derecha     ver
-              PULSOUT(mDer,650) 'Motor izquierda   ver}
   PULSOUT(mIzq,1350)
   PULSOUT(mDer,1650)
-  ''PULSOUT2(mIzq,30)
-  ''PULSOUT2(mDer,-30)
+
+pub adelanteLentoPWM
+  outa[signoIzq]~~
+  outa[signoDer]~~
+  set_duty(1,2)
+  set_duty(2,2)
+  
 
 pub derechacorto | OneMS, TimeBase, Time
 
@@ -252,15 +255,27 @@ pub derechacorto | OneMS, TimeBase, Time
   PULSOUT(mIzq,1500)
   PULSOUT(mDer,1500)
 
+pub derechacortoPWM | OneMS, TimeBase, Time
+  TimeBase := cnt
+  OneMS := clkfreq/1000
+  repeat until NOT sFrenteDer 'no se si es esta la notacion (hasta que ya no lea)
+    Time := cnt
+    
+    outa[signoIzq]~~
+    outa[signoDer]~
+    set_duty(1,10)
+    set_duty(2,10)
+  
+    if (Time - TimeBase) > 15 * OneMS
+      quit
+    
+    outa[signoIzq]~~
+    outa[signoDer]~~
+
+  
+
 
 pub izquierdacorto | OneMS, TimeBase, Time
-  {repeat 1
-    PULSOUT(mIzq,980) 'Motor derecha     ver
-    PULSOUT(mDer,980) 'Motor izquierda   ver
-    pause(20)
-  PULSOUT(mIzq,750) 'Motor derecha  ver
-  PULSOUT(mDer,750) 'Motor izquierda ver
-  pause(20)}
   TimeBase := cnt
   OneMS := clkfreq/1000
 
@@ -272,6 +287,23 @@ pub izquierdacorto | OneMS, TimeBase, Time
       quit
   PULSOUT(mIzq,1500)
   PULSOUT(mDer,1500)
+
+pub izquierdacortoPWM | OneMS, TimeBase, Time
+  TimeBase := cnt
+  OneMS := clkfreq/1000
+  repeat until NOT sFrenteDer 'no se si es esta la notacion (hasta que ya no lea)
+    Time := cnt
+    
+    outa[signoIzq]~
+    outa[signoDer]~~
+    set_duty(1,10)
+    set_duty(2,10)
+  
+    if (Time - TimeBase) > 15 * OneMS
+      quit
+    
+    outa[signoIzq]~~
+    outa[signoDer]~~
 
 
 pub derecha90 | OneMS, TimeBase    ''comprobar
@@ -285,6 +317,21 @@ pub derecha90 | OneMS, TimeBase    ''comprobar
   PULSOUT(mDer,1500)
   'pause(20)
 
+pub derecha90PWM | OneMS, TimeBase    ''comprobar
+  TimeBase := cnt
+  OneMS := clkfreq / 1000
+
+  outa[signoIzq]~~
+  outa[signoDer]~
+  set_duty(1,10)
+  set_duty(2,10)
+  
+  waitcnt(TimeBase += 30*OneMS) 'ajustar
+  
+  set_duty(1,0)
+  set_duty(2,0)
+  'pause(20)
+
 pub derecha45 | OneMS, TimeBase    ''comprobar
   TimeBase := cnt
   OneMS := clkfreq / 1000
@@ -295,6 +342,20 @@ pub derecha45 | OneMS, TimeBase    ''comprobar
   PULSOUT(mIzq,1500)
   PULSOUT(mDer,1500)
   'pause(20)
+
+pub derecha45PWM | OneMS, TimeBase    ''comprobar
+  TimeBase := cnt
+  OneMS := clkfreq / 1000
+
+  outa[signoIzq]~~
+  outa[signoDer]~
+  set_duty(1,10)
+  set_duty(2,10)
+
+  waitcnt(TimeBase += 15*OneMS) 'ajustar
+  
+  set_duty(1,0)
+  set_duty(2,0)
 
 pub izquierda90 | OneMS, TimeBase 'comprobar
   TimeBase := cnt
@@ -307,6 +368,20 @@ pub izquierda90 | OneMS, TimeBase 'comprobar
   PULSOUT(mDer,1500)
   'pause(20)
 
+pub izquierda90PWM | OneMS, TimeBase 'comprobar
+  TimeBase := cnt
+  OneMS := clkfreq / 1000
+
+  outa[signoIzq]~
+  outa[signoDer]~~
+  set_duty(1,10)
+  set_duty(2,10)
+  
+  waitcnt(TimeBase += 30*OneMS) 'ajustar
+  
+  set_duty(1,0)
+  set_duty(2,0) 
+
 pub izquierda45 | OneMS, TimeBase 'comprobar
   TimeBase := cnt
   OneMS := clkfreq / 1000
@@ -318,20 +393,47 @@ pub izquierda45 | OneMS, TimeBase 'comprobar
   PULSOUT(mDer,1500)
   'pause(20)
 
-pub atras180 | OneMS, TimeBase ''comprobar
-TimeBase := cnt
-OneMS := clkfreq / 1000
+pub izquierda45PWM | OneMS, TimeBase 'comprobar
+  TimeBase := cnt
+  OneMS := clkfreq / 1000
 
-PULSOUT(mIzq,1200)
-PULSOUT(mDer,1200)
-waitcnt(TimeBase += 40*OneMS) 'ese 40 es un valor random despues vamos a tener que ajustar
-PULSOUT(mIzq,1500)
-PULSOUT(mDer,1500)
-'pause(20)
+  outa[signoIzq]~
+  outa[signoDer]~~
+  set_duty(1,10)
+  set_duty(2,10)
+  
+  waitcnt(TimeBase += 15*OneMS) 'ajustar
+  
+  set_duty(1,0)
+  set_duty(2,0)   
+
+pub atras180 | OneMS, TimeBase ''comprobar
+    TimeBase := cnt
+    OneMS := clkfreq / 1000
+
+    PULSOUT(mIzq,1200)
+    PULSOUT(mDer,1200)
+    waitcnt(TimeBase += 40*OneMS) 'ese 40 es un valor random despues vamos a tener que ajustar
+    PULSOUT(mIzq,1500)
+    PULSOUT(mDer,1500)
+    'pause(20)
+
+pub atras180PWM | OneMS, TimeBase ''comprobar
+    TimeBase := cnt
+    OneMS := clkfreq / 1000
+
+    outa[signoIzq]~
+    outa[signoDer]~~
+    set_duty(1,10)
+    set_duty(2,10)
+    waitcnt(TimeBase += 40*OneMS) 'ese 40 es un valor random despues vamos a tener que ajustar
+    set_duty(1,0)
+    set_duty(2,0)
+    'pause(20)
 
 pub parar
-  PULSOUT(mIzq,1500)
-  PULSOUT(mDer,1500)
+  set_duty(1,0)
+  set_duty(2,0)
 
 
 PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
@@ -348,21 +450,54 @@ PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
     Duration := 1500 + 5*Value
   else
     Duration := 1500 - 5*Value}
-
+  TimeBase := cnt
   ClkCycles := (Duration *us) #> cntMin                    ' se pone directo '
                                                         ' - inst. time, min cntMin
   dira[Pin]~~                                              ' Set to output
   !outa[Pin]                                               ' set to opposite state
-  waitcnt(ClkCycles + cnt)                                 ' wait until clk gets there
+  waitcnt(TimeBase += ClkCycles)                                 ' wait until clk gets there
   !outa[Pin]
                                                           ' return to orig. state
-  {dira[Pin]
-  !outa[Pin]
-  TimeBase := cnt
-  ClkCycles := (Duration * us) #> cntMin
-  waitcnt(TimeBase += ClkCycles)
-  !outa[Pin]}                                   'creo que aca no afecta hacer esto porque una vez nomas se hace no es repetitivo
 
+pub start_pwm(p1, p2, freq)
+  ''if your PWM frequency is lower than about 35kHz, you can do this in Spin
+
+  period := clkfreq / (1 #> freq <# 35_000)                     ' limit pwm frequency
+
+  cognew(run_pwm(p1, p2), @pwmstack)                            ' launch pwm cog
+
+
+
+pub set_duty(ch, level)
+
+  level := 0 #> level <# 100                                    ' limit duty cycle
+
+  if (ch == 1)
+    duty1 := -period * level / 100
+  elseif (ch == 2)
+    duty2 := -period * level / 100
+
+
+
+pub run_pwm(p1, p2) | t                                         ' start with cognew
+
+  if (p1 => 0)
+    ctra := (%00100 << 26) | p1                                 ' pwm mode
+    frqa := 1
+    phsa := 0
+    dira[p1] := 1                                               ' make pin an output
+
+  if (p2 => 0)
+    ctrb := (%00100 << 26) | p2
+    frqb := 1
+    phsb := 0
+    dira[p2] := 1
+
+  t := cnt                                                      ' sync loop timing
+  repeat
+    phsa := duty1
+    phsb := duty2
+    waitcnt(t += period)
 
 
 PUB pauseS(time) | TimeBase, OneSec              '' Pause for number of seconds
@@ -378,20 +513,3 @@ PUB pauseMs(time) | TimeBase, OneMS                 '' Pause for number of milli
     TimeBase := cnt 'Get current count
     repeat time
       waitcnt(TimeBase += OneMS)
-
-{aca puedo hacer algo parecido pero por ejemplo usar un cog donde voy a pausar y que despues retorne nomas un true}
-
-
-
-{PUB Toggle | TimeBase, OneMS
-  dira[0]~~ 'Set P0 to output
-  OneMS := clkfreq / 1000 'Calculate cycles per 1 millisecond
-  TimeBase := cnt 'Get current count
-  repeat 'Loop endlessly, este es el synced delay
-    waitcnt(TimeBase += OneMS) ' Wait to start of next millisecond
-    !outa[0] ' Toggle P0
-
-  repeat 'esto es el fixed delay
-    !outa[0] 'Toggle pin 0
-    waitcnt(5_000 + cnt) 'Wait for 10 ms
-  }
