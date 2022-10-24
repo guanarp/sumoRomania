@@ -29,14 +29,11 @@ CON
   ''rfD = 3
 
   vel = 40
-  velder=40
-  velizq=40
 
 var
    long us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, lineaIzq, lineaDer, startSignal, sTopIzq, sTopFrente, sTopDer, sRfA, sRfB, sRfC, sRfD, killSwitch
    long Stack[1000] 'Stack space for new cog 'Stack space for new cog
    long Stack2[1000]
-   long Stack3[1000]
    ''Para el PWM
 
    long  duty1
@@ -56,13 +53,12 @@ dira[23..26]~~    ''Salidas motor y pines de direccion
 
 us:= clkfreq / 1_000_000
 
-start_pwm(mIzq, mDer, 1000)
+start_pwm(mIzq, mDer, 20000)
 set_duty(1, 0)
 set_duty(2, 0)
 
 cognew(lecturas, @Stack) ''Habilito un nucleo para que en paralelo ejecute la lectura de todos los sensores
 cognew(lecturas2, @Stack2)
-cognew(lecturas3, @Stack3)
 
 repeat while srfA==0
   parar
@@ -73,14 +69,13 @@ repeat while srfA==0
   ''pauseSec(2)
 
 repeat while srfA==1
-  repeat while (lineaDer==1 and lineaIzq==1 and srfA==1) ''(lineaIzq==1 ''and lineaDer==1)
-    adelantePWM
+  ''repeat while (lineaDer==1 and lineaIzq==1 and srfA==1) ''(lineaIzq==1 ''and lineaDer==1)
+  adelantePWM
     ''pauseSec(0.01)
 
 
-  reversaPWM
-  pauseMs(500)
-  ''parar
+  ''reversaPWM
+  ''pauseSec(1)
   ''atras180PWM
     ''pauseSec(0.1)
 
@@ -110,8 +105,8 @@ pub lecturas
     sFrente := ina[front]
     sFrenteDer := ina[frontRight]
     sDer := ina[right]
-    ''lineaIzq := ina[leftLine]
-    ''  lineaDer := ina[rightLine]
+    lineaIzq := ina[leftLine]
+    lineaDer := ina[rightLine]
     startSignal := ina[rfA]
     sTopIzq := ina[topLeft]
     sTopFrente := ina[topFront]
@@ -124,14 +119,6 @@ pub lecturas2
     ''provisoriamente es lo siguiente
     startSignal := ina[rfA]
     ''killSwitch := ina[rfC]
-
-pub lecturas3
-  ''lectura de sensores
-  repeat
-    pauseMs(2)
-    lineaIzq := ina[leftLine]
-    lineaDer := ina[rightLine]
-
 
 
 PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
@@ -290,15 +277,15 @@ pub adelanterapidoPWM
 pub adelantePWM  | OneMS, TimeBase, Time
   outa[signoIzq]~ ''~~ es alto; ~ es bajo
   outa[signoDer]~~
-  set_duty(1,velizq)
-  set_duty(2,velder)
+  set_duty(1,vel)
+  set_duty(2,vel)
 
 
 pub reversaPWM  | OneMS, TimeBase, Time
   outa[signoIzq]~~ ''~~ es alto; ~ es bajo
   outa[signoDer]~
-  set_duty(1,velizq)
-  set_duty(2,velder)
+  set_duty(1,vel)
+  set_duty(2,vel)
 
 
 pub start_pwm(p1, p2, freq)
@@ -341,12 +328,7 @@ pub run_pwm(p1, p2) | t                                         ' start with cog
     phsb := duty2
     waitcnt(t += period)
 
-PUB pauseMs(time) | TimeBase, OneMS                 '' Pause for number of milliseconds
-  if time > 0
-    OneMS := clkfreq / 1000 'Calculate cycles per 1 millisecond
-    TimeBase := cnt 'Get current count
-    repeat time
-      waitcnt(TimeBase += OneMS)
+
 
 PUB pauseSec(time) | clocks              '' Pause for number of seconds
   if time > 0

@@ -11,13 +11,14 @@ CON
   _xinfreq = 5_000_000         ''Configura el valor del crystal
   cntMin     = 400
 
+
   left = 13 ''Estos son los sensores Pepper
   frontLeft = 8
   front = 9
   frontRight = 10
   right = 11
 
-  leftLine = 4 ''Estos son los sensores de linea
+  leftLine = 6  ''Estos son los sensores de linea
   rightLine = 5
 
   mIzq = 23 ''Los pines para los motores
@@ -30,10 +31,11 @@ CON
   signoIzq = 25 ''hay dos pines mas que hay que soldar para este caso
   signoDer = 24
 
-  rfA = 1
-  ''rfB = 1
-  ''rfC = 2
-  ''rfD = 3
+  rfA = 0
+  rfB = 1
+  rfC = 2
+  rfD = 3
+
 
 var
 long a,us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, sLineaIzq, sLineaDer, sTopIzq, sTopFrente, sTopDer, sRfA, sRfB, sRfC, sRfD,startSignal, killSwitch
@@ -46,7 +48,7 @@ long  pwmstack[32]
 
 PUB Principal
 'dira[0..3]~     ''Entradas sensores de lineas y pines de control A y B
-dira[0..5]~ ''Entradas Control y lineas
+dira[0..7]~ ''Entradas Control y lineas
 dira[8..11]~ ''Entradas Pepper
 dira[20..22]~   ''Entradas sensores Keyence
 dira[23..26]~~    ''Salidas motor y pines de direccion
@@ -161,7 +163,7 @@ pub lecturas
 
 pub lecturas2
   repeat
-    sRfA := ina[rfA]
+    ''sRfA := ina[rfA]
     ''sRfB := ina[rfB]
     ''sRfC := ina[rfC]
     ''sRfD := ina[rfD]
