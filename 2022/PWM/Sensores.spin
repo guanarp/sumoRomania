@@ -28,9 +28,9 @@ CON
   ''rfC = 2
   ''rfD = 3
 
-  vel = 40
-  velder=40
-  velizq=40
+  vel = 20
+  velder=30
+  velizq=30
 
 var
    long us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, lineaIzq, lineaDer, startSignal, sTopIzq, sTopFrente, sTopDer, sRfA, sRfB, sRfC, sRfD, killSwitch
@@ -55,7 +55,7 @@ dira[23..26]~~    ''Salidas motor y pines de direccion
 
 us:= clkfreq / 1_000_000
 
-start_pwm(mIzq, mDer, 20000)
+start_pwm(mIzq, mDer, 15000)
 set_duty(1, 0)
 set_duty(2, 0)
 
@@ -77,15 +77,15 @@ repeat while srfA==1
    {if sTopFrente
        adelantePWM
                     }
-    if sTopIzq
+    {if sTopIzq
       izquierda45PWM
       pararPWM
-
-   { elseif sTopDer
+               }
+    if sTopDer
       derecha45PWM
       pararPWM
 
-    elseif sIzq
+{    elseif sIzq
       izquierda90PWM ''tal vez y por la posicion del sensor conviene girar un poco mas de 90 deg
       pararPWM
 
@@ -197,8 +197,8 @@ pub atras180PWM | OneMS, TimeBase ''comprobar
 
     outa[signoIzq]~
     outa[signoDer]~
-    set_duty(1,vel)
-    set_duty(2,vel)
+    set_duty(1,velizq)
+    set_duty(2,velder)
     waitcnt(TimeBase += 600*OneMS) 'ese 40 es un valor random despues vamos a tener que ajustar
     set_duty(1,0)
     set_duty(2,0)
@@ -226,8 +226,8 @@ pub izquierda90PWM | OneMS, TimeBase 'comprobar
 
   outa[signoIzq]~
   outa[signoDer]~
-  set_duty(1,vel)
-  set_duty(2,vel)
+  set_duty(1,velizq)
+  set_duty(2,velder)
 
   waitcnt(TimeBase += 400*OneMS) 'ajustar
 
@@ -241,8 +241,8 @@ pub derecha45PWM | OneMS, TimeBase    ''comprobar
 
   outa[signoIzq]~~
   outa[signoDer]~~
-  set_duty(1,vel)
-  set_duty(2,vel)
+  set_duty(1,velizq)
+  set_duty(2,velder)
 
   waitcnt(TimeBase += 100*OneMS) 'ajustar
 
@@ -256,8 +256,8 @@ pub derecha90PWM | OneMS, TimeBase    ''comprobar
 
   outa[signoIzq]~~
   outa[signoDer]~~
-  set_duty(1,vel)
-  set_duty(2,vel)
+  set_duty(1,velizq)
+  set_duty(2,velder)
 
   waitcnt(TimeBase += 400*OneMS) 'ajustar
 
@@ -318,15 +318,15 @@ pub adelanterapidoPWM
 pub adelantePWM  | OneMS, TimeBase, Time
   outa[signoIzq]~ ''~~ es alto; ~ es bajo
   outa[signoDer]~~
-  set_duty(1,vel)
-  set_duty(2,vel)
+  set_duty(1,velizq)
+  set_duty(2,velder)
 
 
 pub reversaPWM  | OneMS, TimeBase, Time
   outa[signoIzq]~~ ''~~ es alto; ~ es bajo
   outa[signoDer]~
-  set_duty(1,vel)
-  set_duty(2,vel)
+  set_duty(1,velizq)
+  set_duty(2,velder)
 
 
 pub start_pwm(p1, p2, freq)

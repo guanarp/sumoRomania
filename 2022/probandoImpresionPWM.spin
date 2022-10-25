@@ -24,7 +24,7 @@ CON
   mIzq = 23 ''Los pines para los motores
   mDer = 27
 
-  topLeft = 20
+  ''topLeft = 20
   topFront = 21
   topRight = 22 ''Ult pin de IO
 
@@ -50,7 +50,7 @@ PUB Principal
 'dira[0..3]~     ''Entradas sensores de lineas y pines de control A y B
 dira[0..7]~ ''Entradas Control y lineas
 dira[8..11]~ ''Entradas Pepper
-dira[20..22]~   ''Entradas sensores Keyence
+dira[21..22]~   ''Entradas sensores Keyence
 dira[23..26]~~    ''Salidas motor y pines de direccion
 ''a:=ina[16]
 us := clkfreq / 1_000_000
@@ -157,7 +157,7 @@ pub lecturas
     slineaIzq := ina[leftLine]
     slineaDer := ina[rightLine]
     startSignal := ina[rfA]
-    sTopIzq := ina[topLeft]
+    ''sTopIzq := ina[topLeft]
     sTopFrente := ina[topFront]
     sTopDer := ina[topRight]
 
