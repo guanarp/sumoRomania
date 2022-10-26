@@ -31,9 +31,10 @@ CON
   vel = 30
   velizq=30
   velder=40
-  velizqgiro=35
-  veldergiro=45
-
+  velizqgiro=40
+  veldergiro=50
+  veldercorto=35
+  verizqcorto=45
 var
    long us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, lineaIzq, lineaDer, startSignal, sTopIzq, sTopFrente, sTopDer, sRfA, sRfB, sRfC, sRfD, killSwitch
    long Stack[1000] 'Stack space for new cog 'Stack space for new cog
@@ -81,22 +82,28 @@ repeat while srfA==1
     if sFrente
       adelanterapidoPWM
 
-    elseif sTopFrente
-       adelantePWM
-    {
-    if sTopDer
-      derecha45PWM
-      parar
+    elseif sFrenteDer
+      derechacortoPWM
 
     elseif sFrenteIzq
       izquierdacortoPWM
-    '     }
 
-    {elseif sIzq
+    elseif sTopFrente
+       adelantePWM
+
+    elseif sTopDer
+      derecha45PWM
+
+    elseif sTopIzq
+      izquierda45PWM
+
+    elseif sIzq
       izquierda90PWM
 
     elseif sDer
-      derecha90PWM  }
+      derecha90PWM
+
+
     else
       parar
 
@@ -213,7 +220,7 @@ pub izquierda45PWM | OneMS, TimeBase 'comprobar
   set_duty(1,veldergiro)
   set_duty(2,velizqgiro)
 
-  waitcnt(TimeBase += 250*OneMS) 'ajustar
+  waitcnt(TimeBase += 135*OneMS) 'ajustar
 
   parar
   ''set_duty(1,0)
@@ -229,7 +236,7 @@ pub izquierda90PWM | OneMS, TimeBase 'comprobar
   set_duty(1,veldergiro)
   set_duty(2,velizqgiro)
 
-  waitcnt(TimeBase += 100*OneMS) 'ajustar
+  waitcnt(TimeBase += 250*OneMS) 'ajustar
 
   parar
 
@@ -242,7 +249,7 @@ pub derecha45PWM | OneMS, TimeBase    ''comprobar
   set_duty(1,veldergiro)
   set_duty(2,velizqgiro)
 
-  waitcnt(TimeBase += 250*OneMS) 'ajustar
+  waitcnt(TimeBase += 135*OneMS) 'ajustar
 
   parar
 
@@ -255,7 +262,7 @@ pub derecha90PWM | OneMS, TimeBase    ''comprobar
   set_duty(1,veldergiro)
   set_duty(2,velizqgiro)
 
-  waitcnt(TimeBase += 100*OneMS) 'ajustar
+  waitcnt(TimeBase += 250*OneMS) 'ajustar
 
   parar
 
@@ -287,13 +294,27 @@ pub izquierdacortoPWM | OneMS, TimeBase 'comprobar
 
   outa[signoIzq]~
   outa[signoDer]~~
-  set_duty(1,velizq+10)
-  set_duty(2,velizq-5)
+  set_duty(1,45)
+  set_duty(2,25)
 
   waitcnt(TimeBase += 100*OneMS) 'ajustar
 
   parar
 
+pub derechacortoPWM | OneMS, TimeBase 'comprobar
+  TimeBase := cnt
+  OneMS := clkfreq / 1000
+
+  outa[signoIzq]~
+  outa[signoDer]~~
+  set_duty(1,30)
+  set_duty(2,45)
+
+  waitcnt(TimeBase += 100*OneMS) 'ajustar
+
+  parar
+
+{
 pub derechacortoPWM | OneMS, TimeBase, Time
   TimeBase := cnt
   OneMS := clkfreq/1000
@@ -311,7 +332,7 @@ pub derechacortoPWM | OneMS, TimeBase, Time
     outa[signoIzq]~~
     outa[signoDer]~~
   parar
-
+}
 pub adelanteLentoPWM
   outa[signoIzq]~
   outa[signoDer]~~
