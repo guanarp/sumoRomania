@@ -22,14 +22,14 @@ CON
   rightLine = 5
 
   mIzq = 23 ''Los pines para los motores
-  mDer = 27
+  mDer = 24''27
 
-  topLeft = 20
-  topFront = 21
+  topLeft = 21
+  topFront = 20
   topRight = 22 ''Ult pin de IO
 
   signoIzq = 25 ''hay dos pines mas que hay que soldar para este caso
-  signoDer = 24
+  signoDer = 27''24
 
   rfA = 0
   rfB = 1
@@ -65,11 +65,11 @@ cognew(lecturas, @Stack) ''Habilito un nucleo para que en paralelo ejecute la le
 cognew(lecturas2, @Stack2)
 
 
-start_pwm(mIzq, mDer, 20000)
+start_pwm(mIzq, mDer, 5000)
 outa[signoIzq]~
 outa[signoDer]~
-set_duty(1, 0)
-set_duty(2, 0)
+''set_duty(1, 0)
+''set_duty(2, 0)
 
 
 ''PULSOUT(mIzq,1500) 'Motor1 siempre inicia apagado
