@@ -30,7 +30,8 @@ CON
 
   veladelante = 80
   velatras = 20
-
+  Gveladelante=90
+  Gvelatras=10
   velizq=20''30
   velder=20''40
   velizqgiro=40
@@ -61,7 +62,7 @@ dira[23..27]~~    ''Salidas motor y pines de direccion
 
 us:= clkfreq / 1_000_000
 
-start_pwm(mIzq, mDer, 5000)
+start_pwm(mIzq, mDer, 3000)
 parar
 ''set_duty(1, 0)
 ''set_duty(2, 0)
@@ -80,15 +81,21 @@ repeat while srfA==0
 
 repeat while srfA==1
   repeat while (lineaDer==1 and lineaIzq==1 and srfA==1) ''(lineaIzq==1 ''and lineaDer==1)
-  atras180PWM
-    {adelantePWM
+  {outa[signoIzq]~~
+  outa[signoDer]~~
+  set_dut<y(1,50)
+  set_duty(2,50)
+  }
+    ''derechacortoPWM
 
-    {if sFrente
+    ''adelantePWM
+
+    if sFrente
       adelanterapidoPWM
 
-      if sFrenteDer
+      if (sFrenteDer and lineaDer==1 and lineaIzq==1)
         derechacortoPWM
-      elseif sFrenteIzq
+      elseif (sFrenteIzq and lineaDer==1 and lineaIzq==1)
         izquierdacortoPWM
 
 
@@ -115,16 +122,20 @@ repeat while srfA==1
 
 
     else
+      adelantePWM
+      pauseMs(20)
       parar
-
-
+      repeat 1000
+        pauseMS(5)
+        if (sTopFrente or sTopDer or sTopIzq or sFrente or sFrenteDer or sFrenteIzq or sIzq or Sder)
+          quit
     ''pauseMs(100)
     ''adelanterapidoPWM
 
-     }
+
   reversaPWM
   pauseMs(300)
-  atras180PWM }
+  atras180PWM
     ''pauseSec(0.1)
 
 parar
@@ -205,6 +216,9 @@ PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
 pub parar
   outa[signoIzq]~
   outa[signoDer]~
+  set_duty(1,50)
+  set_duty(2,50)
+
  {
   set_duty(1,0)
   set_duty(2,0)
@@ -216,8 +230,8 @@ pub atras180PWM | OneMS, TimeBase ''comprobar
 
     outa[signoIzq]~~
     outa[signoDer]~~
-    set_duty(1,velatras)
-    set_duty(2,veladelante)
+    set_duty(1,Gvelatras)
+    set_duty(2,Gveladelante)
     waitcnt(TimeBase += 200*OneMS) 'ese 40 es un valor random despues vamos a tener que ajustar
     parar
     ''set_duty(1,0)
@@ -231,8 +245,8 @@ pub izquierda45PWM | OneMS, TimeBase 'comprobar
 
   outa[signoIzq]~~
   outa[signoDer]~~
-  set_duty(1,veladelante)
-  set_duty(2,velatras)
+  set_duty(1,Gveladelante)
+  set_duty(2,Gvelatras)
 
   waitcnt(TimeBase += 135*OneMS) 'ajustar
 
@@ -247,8 +261,8 @@ pub izquierda90PWM | OneMS, TimeBase 'comprobar
 
   outa[signoIzq]~~
   outa[signoDer]~~
-  set_duty(1,veldergiro)
-  set_duty(2,velizqgiro)
+  set_duty(1,Gveladelante)
+  set_duty(2,Gvelatras)
 
   waitcnt(TimeBase += 250*OneMS) 'ajustar
 
@@ -260,8 +274,8 @@ pub derecha45PWM | OneMS, TimeBase    ''comprobar
 
   outa[signoIzq]~~
   outa[signoDer]~~
-  set_duty(1,veldergiro)
-  set_duty(2,velizqgiro)
+  set_duty(1,Gvelatras)
+  set_duty(2,Gveladelante)
 
   waitcnt(TimeBase += 135*OneMS) 'ajustar
 
@@ -273,8 +287,8 @@ pub derecha90PWM | OneMS, TimeBase    ''comprobar
 
   outa[signoIzq]~~
   outa[signoDer]~~
-  set_duty(1,veldergiro)
-  set_duty(2,velizqgiro)
+  set_duty(1,Gvelatras)
+  set_duty(2,Gveladelante)
 
   waitcnt(TimeBase += 250*OneMS) 'ajustar
 
@@ -308,8 +322,8 @@ pub izquierdacortoPWM | OneMS, TimeBase 'comprobar
 
   outa[signoIzq]~~
   outa[signoDer]~~
-  set_duty(1,45)
-  set_duty(2,25)
+  set_duty(1,90)
+  set_duty(2,80)
 
   waitcnt(TimeBase += 100*OneMS) 'ajustar
 
@@ -321,8 +335,8 @@ pub derechacortoPWM | OneMS, TimeBase 'comprobar
 
   outa[signoIzq]~~
   outa[signoDer]~~
-  set_duty(1,30)
-  set_duty(2,45)
+  set_duty(1,80)
+  set_duty(2,90)
 
   waitcnt(TimeBase += 100*OneMS) 'ajustar
 
@@ -357,8 +371,8 @@ pub adelanteLentoPWM
 pub adelanterapidoPWM
   outa[signoIzq]~~
   outa[signoDer]~~
-  set_duty(1,veldergiro)
-  set_duty(2,velizqgiro)
+  set_duty(1,90)
+  set_duty(2,90)
 
 pub adelantePWM  | OneMS, TimeBase, Time
   outa[signoIzq]~~ ''~~ es alto; ~ es bajo
