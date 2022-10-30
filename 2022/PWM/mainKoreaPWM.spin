@@ -39,7 +39,7 @@ CON
   veldercorto=35
   verizqcorto=45
 var
-   long us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, lineaIzq, lineaDer, startSignal, sTopIzq, sTopFrente, sTopDer, sRfA, sRfB, sRfC, sRfD, killSwitch
+   long us,bandera, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, lineaIzq, lineaDer, startSignal, sTopIzq, sTopFrente, sTopDer, sRfA, sRfB, sRfC, sRfD, killSwitch
    long Stack[1000] 'Stack space for new cog 'Stack space for new cog
    long Stack2[1000]
    long Stack3[1000]
@@ -70,7 +70,7 @@ parar
 cognew(lecturas, @Stack) ''Habilito un nucleo para que en paralelo ejecute la lectura de todos los sensores
 cognew(lecturas2, @Stack2)
 cognew(lecturas3, @Stack3)
-
+bandera:=0
 repeat while srfA==0
   parar
 
@@ -79,7 +79,7 @@ repeat while srfA==0
   ''izquierda45PWM
   ''pauseSec(2)
 
-repeat while srfA==1
+repeat while (srfA==1)
   repeat while (lineaDer==1 and lineaIzq==1 and srfA==1) ''(lineaIzq==1 ''and lineaDer==1)
   {outa[signoIzq]~~
   outa[signoDer]~~
@@ -89,7 +89,7 @@ repeat while srfA==1
     ''derechacortoPWM
 
     ''adelantePWM
-
+   {
     if sFrente
       adelanterapidoPWM
 
@@ -107,10 +107,10 @@ repeat while srfA==1
 
     elseif sTopFrente
        adelantePWM
-
-    elseif sTopDer
+                 }
+    if sTopDer
       derecha45PWM
-
+     {
     elseif sTopIzq
       izquierda45PWM
 
@@ -122,21 +122,32 @@ repeat while srfA==1
 
 
     else
-      adelantePWM
-      pauseMs(20)
-      parar
-      repeat 1000
-        pauseMS(5)
-        if (sTopFrente or sTopDer or sTopIzq or sFrente or sFrenteDer or sFrenteIzq or sIzq or Sder)
-          quit
+      ''if(bandera==1)
+
+
+      ''if(bandera==0)
+        adelantePWM
+        pauseMs(30)
+        parar
+        repeat 1000
+          pauseMS(5)
+          if (sTopFrente or sTopDer or sTopIzq or sFrente or sFrenteDer or sFrenteIzq or sIzq or Sder)
+                              ''  bandera:=1
+                                quit
+      ''else
+      ''  adelantePWM
+
+
+
     ''pauseMs(100)
     ''adelanterapidoPWM
-
+       }
 
   reversaPWM
   pauseMs(300)
   atras180PWM
     ''pauseSec(0.1)
+
 
 parar
 {pub control
@@ -277,7 +288,7 @@ pub derecha45PWM | OneMS, TimeBase    ''comprobar
   set_duty(1,Gvelatras)
   set_duty(2,Gveladelante)
 
-  waitcnt(TimeBase += 135*OneMS) 'ajustar
+  waitcnt(TimeBase += 100*OneMS) 'ajustar
 
   parar
 
