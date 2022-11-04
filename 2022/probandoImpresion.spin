@@ -21,13 +21,16 @@ CON
   rightLine = 5
 
   mIzq = 23 ''Los pines para los motores
-  mDer = 24
+  mDer = 27
+
+  signoIzq = 25 ''hay dos pines mas que hay que soldar para este caso
+  signoDer = 24
 
   topLeft = 20
   topFront = 21
   topRight = 22 ''Ult pin de IO
 
-  rfA = 1
+  rfA = 0
   ''rfB = 1
   ''rfC = 2
   ''rfD = 3
@@ -37,9 +40,18 @@ long a,us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, sLineaIzq, sLineaDer, sT
 long Stack[1000] 'Stack space for new cog
 long Stack2[1000] 'Stack space for new cog
 
+long  duty1
+long  duty2
+long  period
+
+long  pwmstack[32]
+long killstack[100]
+
+long bandera
+
 PUB Principal
 dira[0..5]~
-dira[8..13]~
+dira[8..14]~
 dira[20..22]~
 dira[23..24]~~    ''Salidas motor
 ''dira[16..22]~   ''Entradas sensores
@@ -49,36 +61,35 @@ us := clkfreq / 1_000_000
 outa[mIzq]~
 outa[mDer]~ ''Poniendo a 0 por seguridad
 
-sRfA :=1
+{start_pwm(mIzq, mDer, 20000) ''los pines mizq y mder son canal 1 y 2, 20000 es la frecuencia del pwm, el maximo del driver chico que tenemos es 25k, mas bajo mas ruidoso
+set_duty(1, 0) ''Se duty elige el porcentaje de velocidad: se traduce a en el canal 1, settea a 0% de velocidad
+set_duty(2, 0)}
+
+
+sRfA :=0
 startSignal := 0
-killSwitch := 0
+killSwitch := 1
+bandera := 0
 
 cognew(lecturas, @Stack) ''Habilito un nucleo para que en paralelo ejecute la lectura de todos los sensores
 cognew(lecturas2, @Stack2)
 
-PULSOUT(mIzq,1500) 'Motor1 siempre inicia apagado
-PULSOUT(mDer,1500) 'Motor2 siempre inicia apagado
+''PULSOUT(mIzq,1500) 'Motor1 siempre inicia apagado
+''PULSOUT(mDer,1500) 'Motor2 siempre inicia apagado
 
 
 Serial.start(31, 30, 0, 9600) ''Que onda esto no se de donde sale el start y sus parametros
   repeat
-    PULSOUT(mIzq,1500) 'Motor1 siempre inicia apagado
-    PULSOUT(mDer,1500) 'Motor2 siempre inicia apagado
+    ''PULSOUT(mIzq,1500) 'Motor1 siempre inicia apagado
+    ''PULSOUT(mDer,1500) 'Motor2 siempre inicia apagado
+    {set_duty(1, 0) ''Se duty elige el porcentaje de velocidad: se traduce a en el canal 1, settea a 0% de velocidad
+    set_duty(2, 0)}
     ''valor:=ina[16]
     Serial.str(string("Sensor RFA: "))
     Serial.Dec(sRfA)
     Serial.tx(13) ''El tx13 es un enter nomas
     ''valor1:=ina[17]
-    Serial.str(string("Sensor RFB: "))
-    Serial.Dec(sRfB)
-    Serial.tx(13)
-    Serial.str(string("Sensor RFC: "))
-    Serial.Dec(sRfC)
-    Serial.tx(13)
-    ''valor2:=ina[18]
-    Serial.str(string("Sensor RFD: "))
-    Serial.Dec(sRfD)
-    Serial.tx(13)
+
     Serial.str(string("Sensor start: "))
     Serial.Dec(startSignal)
     Serial.tx(13)
@@ -130,7 +141,12 @@ Serial.start(31, 30, 0, 9600) ''Que onda esto no se de donde sale el start y sus
     Serial.tx(13)
 
     ''outa[LED] := ina[SENSOR]     ''lee el sensor y le pasa el valor el led
-    pauseMs(1500)
+    pauseMs(1000)
+    if startSignal == 1
+      bandera :=1
+    if bandera :=1 and startSignal ==0
+      reboot
+
 
 pub lecturas
   ''lectura de sensores
@@ -148,19 +164,69 @@ pub lecturas
     sTopDer := ina[topRight]
 
 pub lecturas2
+  ''lectura de sensores
   repeat
     sRfA := ina[rfA]
-    ''sRfB := ina[rfB]
-    ''sRfC := ina[rfC]
-    ''sRfD := ina[rfD]
     ''provisoriamente es lo siguiente
-    if sRfA == 0
-      if startSignal ==0
-        startSignal := 1
-        killSwitch := 0
-      else
-        startSignal := 0
-        killSwitch := 1
+    startSignal := ina[rfA]
+    {if startSignal ==1
+      pauseSec(1)
+      cognew(kill,@killstack)}
+
+
+{pub kill
+  repeat
+    if startSignal == 0
+      killSwitch := 0
+    if killSwitch ==0
+      bandera :=1
+      quit}
+
+
+
+pub pararPWM
+  set_duty(1,0)
+  set_duty(2,0)
+
+pub start_pwm(p1, p2, freq)
+  ''if your PWM frequency is lower than about 35kHz, you can do this in Spin
+
+  period := clkfreq / (1 #> freq <# 35_000)                     ' limit pwm frequency
+
+  cognew(run_pwm(p1, p2), @pwmstack)                            ' launch pwm cog
+
+
+
+pub set_duty(ch, level)
+
+  level := 0 #> level <# 100                                    ' limit duty cycle
+
+  if (ch == 1)
+    duty1 := -period * level / 100
+  elseif (ch == 2)
+    duty2 := -period * level / 100
+
+
+
+pub run_pwm(p1, p2) | t                                         ' start with cognew
+
+  if (p1 => 0)
+    ctra := (%00100 << 26) | p1                                 ' pwm mode
+    frqa := 1
+    phsa := 0
+    dira[p1] := 1                                               ' make pin an output
+
+  if (p2 => 0)
+    ctrb := (%00100 << 26) | p2
+    frqb := 1
+    phsb := 0
+    dira[p2] := 1
+
+  t := cnt                                                      ' sync loop timing
+  repeat
+    phsa := duty1
+    phsb := duty2
+    waitcnt(t += period)
 
 
 
@@ -194,7 +260,7 @@ PUB SEROUT_STR(Pin, stringptr, Baud, Mode, bits)
     repeat strsize(stringptr)
       SEROUT_CHAR(Pin,byte[stringptr++],Baud, Mode, bits)  ' Send each character in string
 
-PUB pauseS(time) | TimeBase, OneSec              '' Pause for number of seconds
+PUB pauseSec(time) | TimeBase, OneSec              '' Pause for number of seconds
   if time > 0
     TimeBase := cnt
     OneSec := clkfreq

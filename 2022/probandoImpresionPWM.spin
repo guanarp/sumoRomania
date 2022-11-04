@@ -31,10 +31,11 @@ CON
   signoIzq = 25 ''hay dos pines mas que hay que soldar para este caso
   signoDer = 27''24
 
-  rfA = 0
-  rfB = 1
-  rfC = 2
-  rfD = 3
+  ''rfA = 0
+  ''rfB = 1
+  ''rfC = 2
+  ''rfD = 3
+  start = 0
 
 
 var
@@ -163,6 +164,7 @@ pub lecturas
 
 pub lecturas2
   repeat
+    startSignal := ina[start]
     ''sRfA := ina[rfA]
     ''sRfB := ina[rfB]
     ''sRfC := ina[rfC]

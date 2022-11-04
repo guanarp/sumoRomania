@@ -26,15 +26,15 @@ CON
   _xinfreq = 5_000_000
 
 CON                        ' CONs for TestMPU test routine
-  SDA_PIN        = 8
-  SCL_PIN        = 9
+  SDA_PIN        = 29
+  SCL_PIN        = 28
   SERIAL_TX_PIN  = 30
   SERIAL_RX_PIN  = 31
 
 VAR
   long x0, y0, z0, t
   long Cog
-  long rx, ry, rz, temp, ax, ay, az, arx, ary,XZ,XZfinal   'PASM code assumes these to be contiguous
+  long rx, ry, rz, temp, ax, ay, az, arx, ary, XZ, XZfinal, velBruto, velEscalado  'PASM code assumes these to be contiguous
 
 OBJ
   'debug : "FullDuplexSerialPlus.spin"
@@ -46,14 +46,15 @@ PUB TestMPU  | MPUcog
   ' Start cog to pull gyro/accel data from chip
   ' Print data to serial out every few seconds
   '------------------------------------------------
-  debug.start(SERIAL_RX_PIN, SERIAL_TX_PIN, 0, 115200) 'Start cog to allow IO with serial terminal
+  debug.start(SERIAL_RX_PIN, SERIAL_TX_PIN, 0, 9600) 'Start cog to allow IO with serial terminal
 
   repeat 4
      waitcnt(clkfreq + cnt)
 
   debug.str(string("Starting..."))
   debug.tx(13)
-  debug.str(string("GX  GY  GZ    AX  AY  AZ"))
+  ''debug.str(string("GX  GY  GZ    AX  AY  AZ"))
+  debug.str(string("GZ Escalado XZ"))
   debug.tx(13)
   debug.str(string("-------------------------"))
   debug.tx(13)
@@ -61,21 +62,34 @@ PUB TestMPU  | MPUcog
   MPUcog := Start( SCL_PIN, SDA_PIN)
 
   'Output gyro data, then accel data, once per second
+  XZ := 0
   repeat
 
      ''debug.dec(GetRX)
      ''debug.str(string(", "))
      ''debug.dec(GetRY)
      ''debug.str(string(", "))
-     debug.dec(GetRZ)
+     velBruto := GetRZ
+     debug.dec(velBruto)
+     debug.str(string("   "))
+     velEscalado := velBruto *100/164
+     debug.dec(velEscalado)
      debug.str(string("   "))
     '' debug.dec(GetAX)
      ''debug.str(string(", "))
      ''debug.dec(GetAY)
      debug.str(string(", "))
-     debug.dec(GetXZ)
+     XZ += velEscalado   ''50ms de intervalo, deg/s
+     debug.dec(XZ)
      debug.tx(13)
-     waitcnt((clkfreq / 10) + cnt)
+     waitcnt((clkfreq) + cnt)
+     if XZ >= 90 ''or XZ <= -90
+      debug.str(string("Noventa grados, chau"))
+      debug.tx(13)
+      debug.dec(XZ)
+      debug.tx(13)
+      quit
+
 
 
 PUB Start( SCL, SDA ) : Status
@@ -125,10 +139,12 @@ PUB GetARX
 
 PUB GetARY
   return ary
-PUB GetXZ
+
+{PUB GetXZ
   ''XZ:= GetRX*(clkfreq / 100000)/800
   XZfinal+=(GetRZ*(constant(80_000_000/192) + cnt))/10_000_0000
-  return XZFinal
+  return XZFinal}
+
 PRI computeTimes                                       '' Set up timing constants in assembly
                                                        '  (Done this way to avoid overflow)
   i2cDataSet := ((clkfreq / 10000) *  350) / 100000    ' Data setup time -  350ns (400KHz)

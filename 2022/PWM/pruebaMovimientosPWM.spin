@@ -78,8 +78,6 @@ var
 
    long  pwmstack[32]
 
-   long bandera
-
    long killstack[100]
 
 
@@ -97,64 +95,21 @@ us:= clkfreq / 1_000_000                  ' Clock cycles for 1 us
 start_pwm(mIzq, mDer, 20000) ''los pines mizq y mder son canal 1 y 2, 20000 es la frecuencia del pwm, el maximo del driver chico que tenemos es 25k, mas bajo mas ruidoso
 set_duty(1, 0) ''Se duty elige el porcentaje de velocidad: se traduce a en el canal 1, settea a 0% de velocidad
 set_duty(2, 0)
+sRfA :=0
 startSignal :=0
 killSwitch :=1
 
 
 cognew(lecturas, @Stack) ''Habilito un nucleo para que en paralelo ejecute la lectura de todos los sensores
-cognew(lecturas2, @Stack2) ''Otro para los dispositivos de control
-cognew(kill, @killstack)
+''cognew(lecturas2, @Stack2) ''Otro para los dispositivos de control
+''cognew(kill, @killstack)
 
 
 
 
 repeat
-  repeat while startSignal==0 ''Para prender
-    pararPWM
-      ''idea: como aca en paralelo esta leyendo todos los sesnores, ya se puede elegir una materia aca mismo luego
-
-
-  'pauseS(5) ''tiempo reglamentado
-
-  repeat ''este bucle si ya es de trabajo del bot
-    bandera :=1
-    {Trata primero de corregir los lugares que mas tardaria en colocarse bien, lo ultimo que decide es ir de frente}
-    ''repeat while (lineaIzq==1 and lineaDer==1) ''Negro es 1, blacno es 0
-      {if sIzq==0
-        izquierda90PWM ''tal vez y por la posicion del sensor conviene girar un poco mas de 90 deg
-
-      elseif sDer==0
-        derecha90PWM
-
-      elseif sTopIzq
-        izquierda45PWM
-        pararPWM
-
-      elseif sTopDer
-        derecha45PWM
-        pararPWM
-
-      elseif sTopFrente
-        adelantePWM
-        ''parar se podria hacer que vaya un poco al frente y luego quedarse quieto
-
-      ''aca es otro if porque esto no es exclusivo con los sensores anteriores
-      if sFrenteIzq==0
-        izquierdacortoPWM
-        ''adelante
-
-      if sFrenteDer==0
-        derechacortoPWM
-        ''adelante
-
-      if sFrente
-        adelanterapidoPWM
-      else
-        pararPWM} ''aca en vez de ir para el frente lento, podria quedarse quieto y buscar girando o algo asi, a discutir
-    adelantePWM
-    if bandera ==1 and startSignal ==0
-      quit
   atras180PWM
+  pauseSec(4)
 
 
 
@@ -183,7 +138,7 @@ pub lecturas2
     sRfA := ina[rfA]
     ''provisoriamente es lo siguiente
     startSignal := ina[rfA]
-    if startSignal == 1
+    if startSignal ==1
       pauseSec(1)
       cognew(kill,@killstack)
 
@@ -421,11 +376,11 @@ pub atras180PWM | OneMS, TimeBase ''comprobar
   TimeBase := cnt
   OneMS := clkfreq / 1000
 
-  outa[signoIzq]~
+  outa[signoIzq]~~
   outa[signoDer]~~
   set_duty(1,10)
   set_duty(2,10)
-  waitcnt(TimeBase += 1000*OneMS) 'ese 40 es un valor random despues vamos a tener que ajustar
+  waitcnt(TimeBase += 650*OneMS) 'ese 40 es un valor random despues vamos a tener que ajustar
   set_duty(1,0)
   set_duty(2,0)
   'pause(20)

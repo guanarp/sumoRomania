@@ -23,15 +23,19 @@ CON
   topFront = 20
   topRight = 22 ''Ult pin de IO
 
-  rfA = 0
+  rfA = 25''0
   ''rfB = 1
   ''rfC = 2
   ''rfD = 3
 
-  veladelante = 80
-  velatras = 20
-  Gveladelante=90
-  Gvelatras=10
+  {veladelante = 80
+  velatras = 20}
+  veladelante = 1785
+  velatras = 1254
+  {Gveladelante=90
+  Gvelatras=10}
+  Gveladelante = 1875 ''1840
+  Gvelatras = 1165 ''1200
   velizq=20''30
   velder=20''40
   velizqgiro=40
@@ -39,17 +43,17 @@ CON
   veldercorto=35
   verizqcorto=45
 var
-   long us,bandera, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, lineaIzq, lineaDer, startSignal, sTopIzq, sTopFrente, sTopDer, sRfA, sRfB, sRfC, sRfD, killSwitch
+   long us,bandera, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, lineaIzq, lineaDer, startSignal, sTopIzq, sTopFrente, sTopDer, sRfA, killSwitch
    long Stack[1000] 'Stack space for new cog 'Stack space for new cog
    long Stack2[1000]
    long Stack3[1000]
    ''Para el PWM
 
-   long  duty1
+   {long  duty1
    long  duty2
    long  period
 
-   long  pwmstack[32]
+   long  pwmstack[32]}
 
 
 PUB Principal
@@ -62,7 +66,7 @@ dira[23..27]~~    ''Salidas motor y pines de direccion
 
 us:= clkfreq / 1_000_000
 
-start_pwm(mIzq, mDer, 3000)
+''start_pwm(mIzq, mDer, 3000)
 parar
 ''set_duty(1, 0)
 ''set_duty(2, 0)
@@ -90,35 +94,37 @@ repeat while (srfA==1)
 
     ''adelantePWM
 
+    derecha45
+    adelante
     if sFrente
-      adelanterapidoPWM
+      adelanterapido
 
       if (sFrenteDer and lineaDer==1 and lineaIzq==1)
-        derechacortoPWM
+        derechacorto
       elseif (sFrenteIzq and lineaDer==1 and lineaIzq==1)
-        izquierdacortoPWM
+        izquierdacorto
 
 
     elseif sFrenteDer
-      derechacortoPWM
+      derechacorto
 
     elseif sFrenteIzq
-      izquierdacortoPWM
+      izquierdacorto
 
     elseif sTopFrente
-       adelantePWM
+       adelante
 
     elseif sTopDer
-      derecha45PWM
+      derecha45
 
     elseif sTopIzq
-      izquierda45PWM
+      izquierda45
 
     elseif sIzq
-      izquierda90PWM
+      izquierda90
 
     elseif sDer
-      derecha90PWM
+      derecha90
 
 
     else
@@ -126,14 +132,14 @@ repeat while (srfA==1)
 
 
       ''if(bandera==0)
-        adelantePWM
-        pauseMs(30)
+        adelante
+        {pauseMs(80) ''antes era 300
         parar
         repeat 4000
           pauseMS(1)
           if (sTopFrente or sTopDer or sTopIzq or sFrente or sFrenteDer or sFrenteIzq or sIzq or Sder)
                               ''  bandera:=1
-                                quit
+                                quit}
       ''else
       ''  adelantePWM
 
@@ -143,9 +149,9 @@ repeat while (srfA==1)
     ''adelanterapidoPWM
 
 
-  reversaPWM
+  reversa
   pauseMs(100) ''estaba en 300 y es muuucho
-  atras180PWM
+  atras180
     ''pauseSec(0.1)
 
 
@@ -227,22 +233,26 @@ PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
 pub parar
   outa[signoIzq]~
   outa[signoDer]~
-  set_duty(1,50)
-  set_duty(2,50)
+  {set_duty(1,50)
+  set_duty(2,50)}
+  PULSOUT(mIzq,1520)
+  PULSOUT(mDer,1520)
 
  {
   set_duty(1,0)
   set_duty(2,0)
  }
 
-pub atras180PWM | OneMS, TimeBase ''comprobar
+pub atras180 | OneMS, TimeBase ''comprobar
     TimeBase := cnt
     OneMS := clkfreq / 1000
 
     outa[signoIzq]~~
     outa[signoDer]~~
-    set_duty(1,Gvelatras)
-    set_duty(2,Gveladelante)
+    {set_duty(1,Gvelatras)
+    set_duty(2,Gveladelante)}
+    PULSOUT(mIzq,Gvelatras)
+    PULSOUT(mDer,Gveladelante)
     waitcnt(TimeBase += 200*OneMS) 'ese 40 es un valor random despues vamos a tener que ajustar
     parar
     ''set_duty(1,0)
@@ -250,14 +260,16 @@ pub atras180PWM | OneMS, TimeBase ''comprobar
     'pause(20)
 
 
-pub izquierda45PWM | OneMS, TimeBase 'comprobar
+pub izquierda45 | OneMS, TimeBase 'comprobar
   TimeBase := cnt
   OneMS := clkfreq / 1000
 
   outa[signoIzq]~~
   outa[signoDer]~~
-  set_duty(1,Gveladelante)
-  set_duty(2,Gvelatras)
+  {set_duty(1,Gveladelante)
+  set_duty(2,Gvelatras)}
+  PULSOUT(mIzq,Gveladelante)
+  PULSOUT(mDer,Gvelatras)
 
   waitcnt(TimeBase += 135*OneMS) 'ajustar
 
@@ -266,40 +278,46 @@ pub izquierda45PWM | OneMS, TimeBase 'comprobar
   ''set_duty(2,0)
 
 
-pub izquierda90PWM | OneMS, TimeBase 'comprobar
+pub izquierda90 | OneMS, TimeBase 'comprobar
   TimeBase := cnt
   OneMS := clkfreq / 1000
 
   outa[signoIzq]~~
   outa[signoDer]~~
-  set_duty(1,Gveladelante)
-  set_duty(2,Gvelatras)
+  {set_duty(1,Gveladelante)
+  set_duty(2,Gvelatras)}
+  PULSOUT(mIzq,Gveladelante)
+  PULSOUT(mDer,Gvelatras)
 
   waitcnt(TimeBase += 250*OneMS) 'ajustar
 
   parar
 
-pub derecha45PWM | OneMS, TimeBase    ''comprobar
+pub derecha45 | OneMS, TimeBase    ''comprobar
   TimeBase := cnt
   OneMS := clkfreq / 1000
 
   outa[signoIzq]~~
   outa[signoDer]~~
-  set_duty(1,Gvelatras)
-  set_duty(2,Gveladelante)
+  {set_duty(1,Gvelatras)
+  set_duty(2,Gveladelante)}
+  PULSOUT(mIzq,Gvelatras)
+  PULSOUT(mDer,Gveladelante)
 
   waitcnt(TimeBase += 100*OneMS) 'ajustar
 
   parar
 
-pub derecha90PWM | OneMS, TimeBase    ''comprobar
+pub derecha90 | OneMS, TimeBase    ''comprobar
   TimeBase := cnt
   OneMS := clkfreq / 1000
 
   outa[signoIzq]~~
   outa[signoDer]~~
-  set_duty(1,Gvelatras)
-  set_duty(2,Gveladelante)
+  {set_duty(1,Gvelatras)
+  set_duty(2,Gveladelante)}
+  PULSOUT(mIzq,Gvelatras)
+  PULSOUT(mDer,Gveladelante)
 
   waitcnt(TimeBase += 250*OneMS) 'ajustar
 
@@ -327,27 +345,32 @@ pub derecha90PWM | OneMS, TimeBase    ''comprobar
   parar
 }
 
-pub izquierdacortoPWM | OneMS, TimeBase 'comprobar
+pub izquierdacorto | OneMS, TimeBase 'comprobar
   TimeBase := cnt
   OneMS := clkfreq / 1000
 
   outa[signoIzq]~~
   outa[signoDer]~~
-  set_duty(1,90)
-  set_duty(2,80)
+  {set_duty(1,90)
+  set_duty(2,80)}
+  PULSOUT(mIzq,1875)
+  PULSOUT(mDer,1785)
 
   waitcnt(TimeBase += 100*OneMS) 'ajustar
 
   parar
 
-pub derechacortoPWM | OneMS, TimeBase 'comprobar
+pub derechacorto | OneMS, TimeBase 'comprobar
   TimeBase := cnt
   OneMS := clkfreq / 1000
 
   outa[signoIzq]~~
   outa[signoDer]~~
-  set_duty(1,80)
-  set_duty(2,90)
+  {set_duty(1,80)
+  set_duty(2,90)}
+  PULSOUT(mIzq,1785)
+  PULSOUT(mDer,1875)
+
 
   waitcnt(TimeBase += 100*OneMS) 'ajustar
 
@@ -372,34 +395,41 @@ pub derechacortoPWM | OneMS, TimeBase, Time
     outa[signoDer]~~
   parar
 }
-pub adelanteLentoPWM
+pub adelanteLento
   outa[signoIzq]~~
   outa[signoDer]~~
-  set_duty(1,2)
-  set_duty(2,2)
+  {set_duty(1,2)
+  set_duty(2,2)}
+  PULSOUT(mIzq,1565)
+  PULSOUT(mDer,1475)
 
 
-pub adelanterapidoPWM
+pub adelanterapido
   outa[signoIzq]~~
   outa[signoDer]~~
-  set_duty(1,90)
-  set_duty(2,90)
+  {set_duty(1,90)
+  set_duty(2,90)}
+  PULSOUT(mIzq,1875)
+  PULSOUT(mDer,1875)
 
-pub adelantePWM  | OneMS, TimeBase, Time
+
+pub adelante
   outa[signoIzq]~~ ''~~ es alto; ~ es bajo
   outa[signoDer]~~
-  set_duty(1,veladelante)''velder)
-  set_duty(2,veladelante)''velizq)
+  {set_duty(1,veladelante)''velder)
+  set_duty(2,veladelante)''velizq)}
+  PULSOUT(mIzq,veladelante)
+  PULSOUT(mDer,veladelante)
 
 
-pub reversaPWM  | OneMS, TimeBase, Time
+pub reversa
   outa[signoIzq]~~ ''~~ es alto; ~ es bajo
   outa[signoDer]~~
   set_duty(1,velatras)
   set_duty(2,velatras)
 
 
-pub start_pwm(p1, p2, freq)
+{pub start_pwm(p1, p2, freq)
   ''if your PWM frequency is lower than about 35kHz, you can do this in Spin
 
   period := clkfreq / (1 #> freq <# 35_000)                     ' limit pwm frequency
@@ -437,7 +467,7 @@ pub run_pwm(p1, p2) | t                                         ' start with cog
   repeat
     phsa := duty1
     phsb := duty2
-    waitcnt(t += period)
+    waitcnt(t += period)}
 
 PUB pauseMs(time) | TimeBase, OneMS                 '' Pause for number of milliseconds
   if time > 0

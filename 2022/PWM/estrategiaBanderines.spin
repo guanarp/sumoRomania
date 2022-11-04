@@ -13,10 +13,10 @@ CON
   rightLine = 5
 
   mIzq = 23 ''Los pines para los motores
-  mDer = 24 ''27
+  mDer = 24''27
 
   signoIzq = 25 ''hay dos pines mas que hay que soldar para este caso
-  signoDer = 27 ''24
+  signoDer = 27''24
 
 
   topLeft = 21
@@ -90,35 +90,37 @@ repeat while (srfA==1)
 
     ''adelantePWM
 
-    if sFrente
+    if sFrente and sFrenteDer and sFrenteIzq
       adelanterapidoPWM
 
-      if (sFrenteDer and lineaDer==1 and lineaIzq==1)
+      {if (sFrenteDer and lineaDer==1 and lineaIzq==1)
         derechacortoPWM
       elseif (sFrenteIzq and lineaDer==1 and lineaIzq==1)
-        izquierdacortoPWM
+        izquierdacortoPWM}
 
 
-    elseif sFrenteDer
+    elseif sFrenteDer  and sFrente
       derechacortoPWM
 
-    elseif sFrenteIzq
+    elseif sFrenteIzq and sFrente
       izquierdacortoPWM
 
     elseif sTopFrente
        adelantePWM
 
     elseif sTopDer
-      derecha45PWM
+      derecha90PWM ''era 45 pero probando porque es contra banderin
 
     elseif sTopIzq
-      izquierda45PWM
+      izquierda90PWM
 
     elseif sIzq
       izquierda90PWM
+      izquierda45PWM
 
     elseif sDer
       derecha90PWM
+      derecha45PWM
 
 
     else

@@ -60,7 +60,7 @@ CON
   topRight = 22 ''Ult pin de IO
 
   rfA = 0
- 
+
 
 
 var
@@ -87,48 +87,49 @@ PULSOUT(mDer,1500) 'Motor2 siempre inicia apagado
 cognew(lecturas, @Stack) ''Habilito un nucleo para que en paralelo ejecute la lectura de todos los sensores
 cognew(lecturas2, @Stack2)
 
-repeat until startSignal ''Para prender
+repeat until startSignal==1 ''Para prender
   parar
     ''idea: como aca en paralelo esta leyendo todos los sesnores, ya se puede elegir una materia aca mismo luego
 
 
 
-repeat until killSwitch ''este bucle si ya es de trabajo del bot
+repeat until killSwitch==0 ''este bucle si ya es de trabajo del bot
 
   {Hasta ahora esta estrategia tiene solamente todos los sensores peppers, hay que poner despues un arbol de decisiones para los keyence
   que van a estar arriba}
 
   {Trata primero de corregir los lugares que mas tardaria en colocarse bien, lo ultimo que decide es ir de frente}
-  repeat while (lineaIzq and lineaDer) ''Negro es 1, blacno es 0
+  repeat while (lineaIzq==1 and lineaDer==1) ''Negro es 1, blacno es 0
     if sIzq==0
       izquierda90 ''tal vez y por la posicion del sensor conviene girar un poco mas de 90 deg
 
     elseif sDer==0
       derecha90
 
-    elseif sTopIzq
+    elseif sTopIzq==1
       izquierda45
       parar
 
-    elseif sTopDer
+    elseif sTopDer==1
       derecha45
       parar
 
-    elseif sTopFrente
+    elseif sTopFrente==1
       adelante
       ''parar se podria hacer que vaya un poco al frente y luego quedarse quieto
 
     ''aca es otro if porque esto no es exclusivo con los sensores anteriores
+    if sFrente ==1
+      adelanterapido
+
     if sFrenteIzq==0
       izquierdacorto
-      ''adelante
+      adelanterapido
 
     if sFrenteDer==0
       derechacorto
-      ''adelante
-
-    if sFrente
       adelanterapido
+
     else
       parar ''aca en vez de ir para el frente lento, podria quedarse quieto y buscar girando o algo asi, a discutir
 
@@ -245,7 +246,7 @@ pub derechacorto | OneMS, TimeBase, Time
     Time := cnt
     PULSOUT(mIzq,1960)
     PULSOUT(mDer,1040)
-    if (Time - TimeBase) > 400 * OneMS
+    if (Time - TimeBase) > 400 * OneMS    ''valor arbitrario a corregir el 400
       quit
 
   PULSOUT(mIzq,1500)
@@ -356,7 +357,7 @@ PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
   !outa[Pin]}                                   'creo que aca no afecta hacer esto porque una vez nomas se hace no es repetitivo
 
 
-PUB pauseS(time) | TimeBase, OneSec              '' Pause for number of seconds
+PUB pauseSec(time) | TimeBase, OneSec              '' Pause for number of seconds
   if time > 0
     TimeBase := cnt
     OneSec := clkfreq
