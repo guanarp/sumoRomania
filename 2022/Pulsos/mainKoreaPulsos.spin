@@ -150,11 +150,11 @@ repeat while (startSignal==1)
       if startSignal == 0 or stopSignal == 0
         parar
         pauseMs(50)
-        quit
+
     if startSignal == 0 or stopSignal == 0
       parar
       pauseMs(50)
-      quit
+
 
 
 
