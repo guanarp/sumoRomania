@@ -96,12 +96,14 @@ repeat while startSignal==0
 repeat while startSignal == 1
   ''rampa
   ''izquierda90
-  izquierda45
+  ''izquierda45
   ''derecha45
   ''derecha90
   ''atras180
   ''izquierdacorto
-  ''derechacorto
+  ''parar
+  derechacorto
+  parar
   ''adelanteLento
   {adelante
   pauseMs(200)
@@ -341,7 +343,7 @@ pub izquierda45 | OneMS, TimeBase 'comprobar
   PULSOUT(mIzq,Gvelatras)
   PULSOUT(mDer,Gveladelante)
 
-  waitcnt(TimeBase += 110*OneMS) 'ajustar
+  waitcnt(TimeBase += 100*OneMS) 'ajustar
 
   parar
   ''set_duty(1,0)
@@ -359,7 +361,7 @@ pub izquierda90 | OneMS, TimeBase 'comprobar
   PULSOUT(mIzq,Gvelatras)
   PULSOUT(mDer,Gveladelante)
 
-  waitcnt(TimeBase += 150*OneMS) 'ajustar
+  waitcnt(TimeBase += 113*OneMS) 'ajustar
 
   parar
 
@@ -374,7 +376,7 @@ pub derecha45 | OneMS, TimeBase    ''comprobar
   PULSOUT(mIzq,Gveladelante)
   PULSOUT(mDer,Gvelatras)
 
-  waitcnt(TimeBase += 120*OneMS) 'ajustar
+  waitcnt(TimeBase += 100*OneMS) 'ajustar
 
   parar
 
@@ -389,7 +391,7 @@ pub derecha90 | OneMS, TimeBase    ''comprobar
   PULSOUT(mIzq,Gveladelante+100)
   PULSOUT(mDer,Gvelatras)
 
-  waitcnt(TimeBase += 180*OneMS) 'ajustar
+  waitcnt(TimeBase += 115*OneMS) 'ajustar
 
   parar
 
@@ -423,12 +425,13 @@ pub izquierdacorto | OneMS, TimeBase 'comprobar
   ''outa[signoDer]~~
   {set_duty(1,90)
   set_duty(2,80)}
-  PULSOUT(mIzq,1790)
+  PULSOUT(mIzq,1700)
   PULSOUT(mDer,1860)
 
   waitcnt(TimeBase += 100*OneMS) 'ajustar
 
-  parar
+  ''parar
+  ''adelante
 
 pub derechacorto | OneMS, TimeBase 'comprobar
   TimeBase := cnt
@@ -438,14 +441,15 @@ pub derechacorto | OneMS, TimeBase 'comprobar
   ''outa[signoDer]~~
   {set_duty(1,80)
   set_duty(2,90)}
-  PULSOUT(mIzq,1950)
+  PULSOUT(mIzq,1860)
   pauseMs(50)
-  PULSOUT(mDer,1600)
+  PULSOUT(mDer,1700)
 
 
-  waitcnt(TimeBase += 200*OneMS) 'ajustar
+  waitcnt(TimeBase += 120*OneMS) 'ajustar
 
-  parar
+  ''parar
+  ''adelante
 
 {
 pub derechacortoPWM | OneMS, TimeBase, Time
