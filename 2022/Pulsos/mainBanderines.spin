@@ -96,50 +96,147 @@ repeat while (startSignal==1)
           parar
           pauseMs(50)
 
-      if sFrente and sFrenteDer and sFrenteIzq
+      elseif sFrente and sFrenteDer and sFrenteIzq
         adelanterapido
+        pauseMs(10)
+
 
         if startSignal == 0 or stopSignal == 0
           repeat
             parar
             pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
 
         elseif (sFrenteDer and lineaDer==1 and lineaIzq==1)
           derechacorto
+          pauseMs(10)
+          if startSignal == 0 or stopSignal == 0
+                                repeat
+                                  parar
+                                  pauseMs(50)
+          elseif (lineaDer==0 or lineaIzq==0)
+            reversa
+            pauseMs(300) ''estaba en 300 y es muuucho
+            atras180
         elseif (sFrenteIzq and lineaDer==1 and lineaIzq==1)
           izquierdacorto
+          pauseMs(10)
+          if startSignal == 0 or stopSignal == 0
+                                repeat
+                                  parar
+                                  pauseMs(50)
+          elseif (lineaDer==0 or lineaIzq==0)
+            reversa
+            pauseMs(300) ''estaba en 300 y es muuucho
+            atras180
 
 
       elseif sFrenteDer  and sFrente
         derechacorto
+        pauseMs(10)
+        if startSignal == 0 or stopSignal == 0
+          repeat
+            parar
+            pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
 
       elseif sFrenteIzq and sFrente
         izquierdacorto
+        pauseMs(10)
+        if startSignal == 0 or stopSignal == 0
+          repeat
+            parar
+            pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
 
       elseif sTopFrente
         adelante
+        pauseMs(10)
+        if startSignal == 0 or stopSignal == 0
+          repeat
+            parar
+            pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
 
       elseif sTopDer
         derecha90 ''era 45 pero probando porque es contra banderin
+        pauseMs(10)
+        if startSignal == 0 or stopSignal == 0
+          repeat
+            parar
+            pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
 
       elseif sTopIzq
         izquierda90
+        pauseMs(10)
+        if startSignal == 0 or stopSignal == 0
+          repeat
+            parar
+            pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
 
       elseif sIzq
         izquierda90
+        pauseMs(10)
         izquierda45
+        pauseMs(10)
+        if startSignal == 0 or stopSignal == 0
+          repeat
+            parar
+            pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
 
       elseif sDer
         derecha90
+        pauseMs(10)
         derecha45
+        pauseMs(10)
+        if startSignal == 0 or stopSignal == 0
+          repeat
+            parar
+            pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
 
 
       else
           adelante
           pauseMs(30)
           parar
-          repeat 4000
-            pauseMS(1)
+          if startSignal == 0 or stopSignal == 0
+                                repeat
+                                  parar
+                                  pauseMs(50)
+          elseif (lineaDer==0 or lineaIzq==0)
+                                reversa
+                                pauseMs(300) ''estaba en 300 y es muuucho
+                                atras180
+          repeat 400
+            pauseMS(10)
             if (sTopFrente or sTopDer or sTopIzq or sFrente or sFrenteDer or sFrenteIzq or sIzq or Sder)
               quit
 

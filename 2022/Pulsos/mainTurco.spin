@@ -24,6 +24,7 @@ CON
   topRight = 22 ''Ult pin de IO
 
   stop = 25''0
+  start = 0
   ''rfB = 1
   ''rfC = 2
   ''rfD = 3
@@ -46,7 +47,7 @@ var
    long us,bandera, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, lineaIzq, lineaDer, startSignal, sTopIzq, sTopFrente, sTopDer, stopSignal, killSwitch
    long Stack[1000] 'Stack space for new cog 'Stack space for new cog
    long Stack2[1000]
-   long Stack3[1000]
+   ''long Stack3[1000]
    ''Para el PWM
 
    {long  duty1
@@ -76,7 +77,7 @@ parar
 
 cognew(lecturas, @Stack) ''Habilito un nucleo para que en paralelo ejecute la lectura de todos los sensores
 cognew(lecturas2, @Stack2)
-cognew(lecturas3, @Stack3)
+''cognew(lecturas3, @Stack3)
 repeat while startSignal==0
   parar
   pauseMs(50)
@@ -95,13 +96,14 @@ repeat while (startSignal==1)
         repeat
           parar
           pauseMs(50)
-
-      elseif sFrente
-        adelanterapido
-        if (lineaDer==0 or lineaIzq==0)
+      elseif (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
           atras180
+
+      elseif sFrente==1
+        adelanterapido
+        pauseMs(10)
 
         if (startSignal == 0 or stopSignal == 0)
           repeat
@@ -111,75 +113,115 @@ repeat while (startSignal==1)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
           atras180
-        elseif (sFrenteDer==1 and lineaDer==1 and lineaIzq==1)
+        elseif (sFrenteDer==1 and lineaDer==1 and lineaIzq==1 and bandera==0)
           derechacorto
-          ''pauseMs(10)
+          pauseMs(10)
+          bandera:=1
           if (lineaDer==0 or lineaIzq==0)
                                 reversa
                                 pauseMs(300) ''estaba en 300 y es muuucho
                                 atras180
-        elseif (sFrenteIzq==1 and lineaDer==1 and lineaIzq==1)
+          elseif (startSignal == 0 or stopSignal == 0)
+                                repeat
+                                  parar
+                                  pauseMs(50)
+        elseif (sFrenteIzq==1 and lineaDer==1 and lineaIzq==1 and bandera==0)
           izquierdacorto
-          ''pauseMs(10)
+          pauseMs(10)
+          bandera:=1
           if (lineaDer==0 or lineaIzq==0)
                                 reversa
                                 pauseMs(300) ''estaba en 300 y es muuucho
                                 atras180
+          elseif (startSignal == 0 or stopSignal == 0)
+                                repeat
+                                                        parar
+                                                        pauseMs(50)
 
       elseif sFrenteDer==1
         derechacorto
-        ''pauseMs(10)
+        pauseMs(10)
         if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
           atras180
+        elseif (startSignal == 0 or stopSignal == 0)
+          repeat
+            parar
+            pauseMs(50)
 
       elseif sFrenteIzq==1
         izquierdacorto
-        ''pauseMs(10)
+        pauseMs(10)
         if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
           atras180
+        elseif (startSignal == 0 or stopSignal == 0)
+          repeat
+            parar
+            pauseMs(50)
 
       elseif sTopFrente==1
          adelante
+         pauseMs(10)
          if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
           atras180
+         elseif (startSignal == 0 or stopSignal == 0)
+          repeat
+            parar
+            pauseMs(50)
 
-      elseif sTopDer
+      elseif sTopDer==1
         derecha45
-        ''pauseMs(10)
+        pauseMs(10)
         if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
           atras180
+        elseif (startSignal == 0 or stopSignal == 0)
+          repeat
+            parar
+            pauseMs(50)
 
-      elseif sTopIzq
+      elseif sTopIzq==1
         izquierda45
-        ''pauseMs(10)
+        pauseMs(10)
         if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
           atras180
+        elseif (startSignal == 0 or stopSignal == 0)
+          repeat
+            parar
+            pauseMs(50)
 
-      elseif sIzq
+      elseif sIzq==1
         izquierda90
-        ''pauseMs(10)
+        pauseMs(10)
         if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
           atras180
+        elseif (startSignal == 0 or stopSignal == 0)
+          repeat
+            parar
+            pauseMs(50)
 
-      elseif sDer
+      elseif sDer==1
         derecha90
-        ''pauseMs(10)
+        pauseMs(10)
         if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
           atras180
+        elseif (startSignal == 0 or stopSignal == 0)
+          repeat
+            parar
+            pauseMs(50)
+
 
       else
           adelante
@@ -189,8 +231,13 @@ repeat while (startSignal==1)
                                 reversa
                                 pauseMs(300) ''estaba en 300 y es muuucho
                                 atras180
+          elseif (startSignal == 0 or stopSignal == 0)
+                                repeat
+                                  parar
+                                  pauseMs(50)
           repeat 80
-            pauseMS(10)
+            ''pauseMS(10)
+            pauseMs(50)
             if (startSignal == 0 or stopSignal == 0)
               parar
               pauseMs(50)
@@ -220,6 +267,7 @@ repeat while (startSignal==1)
     reversa
     pauseMs(300) ''estaba en 300 y es muuucho
     atras180
+    pauseMs(10)
       ''pauseSec(0.1)
   parar
 
@@ -227,6 +275,7 @@ repeat while (startSignal==1)
 pub lecturas
   ''lectura de sensores
   repeat
+
     sIzq := ina[left]
     sFrenteIzq := ina[frontLeft]
     sFrente := ina[front]
@@ -246,10 +295,6 @@ pub lecturas2
     ''provisoriamente es lo siguiente
     startSignal := ina[0]
     ''killSwitch := ina[rfC]
-
-pub lecturas3
-  ''lectura de sensores
-  repeat
     pauseMs(2)
     lineaIzq := ina[leftLine]
     lineaDer := ina[rightLine]
