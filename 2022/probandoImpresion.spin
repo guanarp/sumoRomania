@@ -144,8 +144,8 @@ Serial.start(31, 30, 0, 9600) ''Que onda esto no se de donde sale el start y sus
     pauseMs(1000)
     if startSignal == 1
       bandera :=1
-    if bandera :=1 and startSignal ==0
-      reboot
+    {if bandera :=1 and startSignal ==0
+      reboot}
 
 
 pub lecturas

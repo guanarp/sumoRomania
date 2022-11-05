@@ -31,7 +31,7 @@ CON
   {veladelante = 80     ''max es 1880 y min 1080
   velatras = 20}
   veladelante = 1600''1785
-  velatras = 1400''1254
+  velatras = 1360''1254
   {Gveladelante=90
   Gvelatras=10}
   Gveladelante = 1840
@@ -42,8 +42,13 @@ CON
   veldergiro=50
   veldercorto=35
   verizqcorto=45
+
+  A = 18
+  B = 12
+  C = 26
+  D = 16
 var
-   long us,bandera, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, lineaIzq, lineaDer, startSignal, sTopIzq, sTopFrente, sTopDer, stopSignal, killSwitch
+   long us,bandera, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, lineaIzq, lineaDer, startSignal, sTopIzq, sTopFrente, sTopDer, stopSignal, killSwitch, stratA, stratB, stratC, stratD
    long Stack[1000] 'Stack space for new cog 'Stack space for new cog
    long Stack2[1000]
    long Stack3[1000]
@@ -77,141 +82,94 @@ parar
 cognew(lecturas, @Stack) ''Habilito un nucleo para que en paralelo ejecute la lectura de todos los sensores
 cognew(lecturas2, @Stack2)
 cognew(lecturas3, @Stack3)
-
 repeat while startSignal==0
-
   parar
   pauseMs(50)
-  ''adelante
-  ''pauseMs(50)
-
   ''izquierda45PWM
   ''atras180PWM
   ''izquierda45PWM
-  ''pauseSec(2)}
-
-
-''adelante
-
-repeat while startSignal == 1
-  ''rampa
-  izquierda90
-  ''izquierda45
-  ''derecha45
-  ''derecha90
-  ''atras180
-  ''izquierdacorto
-  ''derechacorto
-  ''adelanteLento
-  ''adelante
-  pauseMs(500)
-
-  ''adelanteRapido
-  ''reversa
-  ''pauseSec(2)
-  ''parar
   ''pauseSec(2)
 
-  if startSignal == 0 or stopSignal == 0
-    parar
-    quit
-if startSignal == 0 or stopSignal == 0
+startSignal:=1
+stopSignal:=1
+
+repeat while (startSignal==1)
+  if (startSignal == 0 or stopSignal == 0)
     repeat
       parar
       pauseMs(50)
 
-  {adelantelento
-  pauseSec(3)
-  parar
-  pauseSec(3)}
-  ''parar
-
-  ''pauseSec(3)
-  {repeat while (lineaDer==1 and lineaIzq==1 and srfA==1) ''(lineaIzq==1 ''and lineaDer==1)
-  {outa[signoIzq]~~
-  outa[signoDer]~~
-  set_dut<y(1,50)
-  set_duty(2,50)
-  }
-    ''derechacortoPWM
-
-    ''adelantePWM
-
-    if sFrente
-      adelanterapido
-
-      if (sFrenteDer and lineaDer==1 and lineaIzq==1)
-        derechacorto
-      elseif (sFrenteIzq and lineaDer==1 and lineaIzq==1)
-        izquierdacorto
-
-
-    elseif sFrenteDer
-      derechacorto
-
-    elseif sFrenteIzq
-      izquierdacorto
-
-    elseif sTopFrente
-       adelante
-
-    elseif sTopDer
-      derecha45
-
-    elseif sTopIzq
-      izquierda45
-
-    elseif sIzq
-      izquierda90
-
-    elseif sDer
-      derecha90
-
-
+  elseif (stratA ==0 and stratB ==0 and stratC ==0 and stratD ==0 and stopSignal ==1)
+    if sTopFrente ==1
+      adelante
     else
-      ''if(bandera==1)
-
-
-      ''if(bandera==0)
-        adelante
-        {pauseMs(80) ''antes era 300
+      parar
+      pauseMs(50)
+  elseif (stratA ==0 and stratB ==0 and stratC ==0 and stratD ==1 and stopSignal ==1)
+    if stopSignal == 0
+      repeat
         parar
-        repeat 4000
-          pauseMS(1)
-          if (sTopFrente or sTopDer or sTopIzq or sFrente or sFrenteDer or sFrenteIzq or sIzq or Sder)
-                              ''  bandera:=1
-                                quit}
-      ''else
-      ''  adelantePWM
+        pauseMs(50)
+    else
+      reversa
+  elseif (stratA ==0 and stratB ==0 and stratC ==1 and stratD ==0 and stopSignal ==1)
+      atras180
+  elseif (stratA ==0 and stratB ==0 and stratC ==1 and stratD ==1 and stopSignal ==1)
+    if sIzq ==1
+      izquierda90
+    else
+      parar
+      pauseMs(50)
+  elseif (stratA ==0 and stratB ==1 and stratC ==0 and stratD ==0 and stopSignal ==1)
+    if (sDer ==1 and stopSignal ==1)
+      derecha90
+    else
+      parar
+      pauseMs(50)
+  elseif (stratA ==0 and stratB ==1 and stratC ==0 and stratD ==1 and stopSignal ==1)
+    if sTopIzq ==1
+      izquierda45
+    else
+      parar
+      pauseMs(50)
+  elseif (stratA ==0 and stratB ==1 and stratC ==1 and stratD ==0 and stopSignal ==1)
+    if sTopDer ==1
+      derecha45
+    else
+      parar
+      pauseMs(50)
+  elseif (stratA ==0 and stratB ==1 and stratC ==1 and stratD ==1 and stopSignal ==1)
+    if sFrenteIzq ==1
+      izquierdacorto
+    else
+      parar
+      pauseMs(50)
+  elseif (stratA ==1 and stratB ==0 and stratC ==0 and stratD ==0 and stopSignal ==1)
+    if sFrenteDer ==1
+      derechacorto
+    else
+      parar
+      pauseMs(50)
+  elseif (stratA ==1 and stratB ==0 and stratC ==0 and stratD ==1 and stopSignal ==1)
+    if sFrente ==1
+      adelanteRapido
+    else
+      parar
+      pauseMs(50)
+  else
+    repeat
+        parar
+        pauseMs(50)
 
-
-
-    ''pauseMs(100)
-    ''adelanterapidoPWM
-
-
-  reversa
-  pauseMs(100) ''estaba en 300 y es muuucho
-  atras180
-    ''pauseSec(0.1)}
+  {elseif stratA ==1 and stratB ==0 and stratC ==1 stratD ==0
+    if sIzq ==1
+      izquierda90
+    else
+      parar
+      pauseMs(50)}
 
 
 parar
-{pub control
-repeat
-  if ina[2]==1        'esperamos por el control
-      if ban==0
-         ban:=1
-      else
-         ban:=1
-      pause<(500)
-  else
-    ban :=1
-
-
-{PUB Print | S
-S := Num.ToStr(LongVal, Num#DEC)
-Term.Str(@S) }}
 
 
 pub lecturas
@@ -224,7 +182,7 @@ pub lecturas
     sDer := ina[right]
     ''lineaIzq := ina[leftLine]
     ''  lineaDer := ina[rightLine]
-    ''startSignal := ina[stop]
+    ''startSignal := ina[rfA]
     sTopIzq := ina[topLeft]
     sTopFrente := ina[topFront]
     sTopDer := ina[topRight]
@@ -243,6 +201,10 @@ pub lecturas3
     pauseMs(2)
     lineaIzq := ina[leftLine]
     lineaDer := ina[rightLine]
+    stratA := ina[A]
+    stratB := ina[B]
+    stratC := ina[C]
+    stratD := ina[D]
 
 
 
@@ -259,7 +221,8 @@ PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
   dira[Pin]~~                                              ' Set to output
   !outa[Pin]                                               ' set to opposite state
   waitcnt(ClkCycles + TimeBase)                                 ' wait until clk gets there
-  !outa[Pin]                                               ' return to orig. state
+  !outa[Pin]
+  ''pauseMs(50)                                               ' return to orig. state
 
 
   {duration := (duration * (clkfreq / 1_000_000)) #> 381
@@ -307,7 +270,7 @@ pub rampa | vel, OneMS, TimeBase
   vel := 1480
   repeat until vel > 1880
     PULSOUT(mIzq,vel)
-    ''PULSOUT(mDer,vel)
+    PULSOUT(mDer,vel)
     vel += 50
     waitcnt(TimeBase += 500*OneMS)
   TimeBase := cnt
@@ -317,7 +280,7 @@ pub rampa | vel, OneMS, TimeBase
   vel := 1480
   repeat until vel < 1080
     PULSOUT(mIzq,vel)
-    ''PULSOUT(mDer,vel)
+    PULSOUT(mDer,vel)
     vel -= 50
     TimeBase := cnt
     waitcnt(TimeBase += 500*OneMS)
@@ -495,47 +458,6 @@ pub reversa
   PULSOUT(mIzq,velatras)
   PULSOUT(mDer,velatras)
 
-
-{pub start_pwm(p1, p2, freq)
-  ''if your PWM frequency is lower than about 35kHz, you can do this in Spin
-
-  period := clkfreq / (1 #> freq <# 35_000)                     ' limit pwm frequency
-
-  cognew(run_pwm(p1, p2), @pwmstack)                            ' launch pwm cog
-
-
-
-pub set_duty(ch, level)
-
-  level := 0 #> level <# 100                                    ' limit duty cycle
-
-  if (ch == 1)
-    duty1 := -period * level / 100
-  elseif (ch == 2)
-    duty2 := -period * level / 100
-
-
-
-pub run_pwm(p1, p2) | t                                         ' start with cognew
-
-  if (p1 => 0)
-    ctra := (%00100 << 26) | p1                                 ' pwm mode
-    frqa := 1
-    phsa := 0
-    dira[p1] := 1                                               ' make pin an output
-
-  if (p2 => 0)
-    ctrb := (%00100 << 26) | p2
-    frqb := 1
-    phsb := 0
-    dira[p2] := 1
-
-  t := cnt                                                      ' sync loop timing
-  repeat
-    phsa := duty1
-    phsb := duty2
-    waitcnt(t += period)}
-
 PUB pauseMs(time) | TimeBase, OneMS                 '' Pause for number of milliseconds
   if time > 0
     OneMS := clkfreq / 1000 'Calculate cycles per 1 millisecond
@@ -548,7 +470,7 @@ PUB pauseSec(time) | clocks              '' Pause for number of seconds
     clocks := (clkfreq * time) '' esto deberia de ser una constante, pero hay que probar, segun documentacion
     waitcnt(clocks + cnt) ''cnt se supone que cuenta el tiempo actual
 
-PUB pauseUs(time) | clocks                 '' Pause for number of milliseconds
+PUB pause(time) | clocks                 '' Pause for number of milliseconds
   if time > 0
-    clocks := ((clkfreq / 1_000_000) * time)
+    clocks := ((clkfreq / 1000) * time)
     waitcnt(clocks + cnt)

@@ -21,25 +21,33 @@ CON
   leftLine = 6  ''Estos son los sensores de linea
   rightLine = 5
 
-  mIzq = 23 ''Los pines para los motores
-  mDer = 24''27
+  mIzq = 24 ''Los pines para los motores
+  mDer = 27''27
 
   topLeft = 21
   topFront = 20
   topRight = 22 ''Ult pin de IO
 
-  signoIzq = 25 ''hay dos pines mas que hay que soldar para este caso
-  signoDer = 27''24
+  stop = 25
+
+  signoIzq =14
+  signoDer =4
+
+
 
   ''rfA = 0
   ''rfB = 1
   ''rfC = 2
   ''rfD = 3
   start = 0
+  A = 18
+  B = 12
+  C = 26
+  D = 16
 
 
 var
-long a,us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, sLineaIzq, sLineaDer, sTopIzq, sTopFrente, sTopDer, sRfA, sRfB, sRfC, sRfD,startSignal, killSwitch
+long us, sIzq, sFrenteIzq, sFrente, sFrenteDer, sDer, sLineaIzq, sLineaDer, sTopIzq, sTopFrente, sTopDer, stratA, stratB, stratC, stratD,startSignal,stopSignal, killSwitch
 long Stack[1000] 'Stack space for new cog
 long Stack2[1000] 'Stack space for new cog
 long  duty1
@@ -50,15 +58,18 @@ long  pwmstack[32]
 PUB Principal
 'dira[0..3]~     ''Entradas sensores de lineas y pines de control A y B
 dira[0..7]~ ''Entradas Control y lineas
-dira[8..11]~ ''Entradas Pepper
+dira[8..12]~ ''Entradas Pepper
+dira[16..18]~
 dira[20..22]~   ''Entradas sensores Keyence
-dira[23..26]~~    ''Salidas motor y pines de direccion
+dira[24..27]~~    ''Salidas motor y pines de direccion
+dira[25..26]~
+
 ''a:=ina[16]
 us := clkfreq / 1_000_000
 outa[mIzq]~
 outa[mDer]~ ''Poniendo a 0 por seguridad
 
-sRfA :=1
+
 startSignal := 0
 killSwitch := 0
 
@@ -67,8 +78,7 @@ cognew(lecturas2, @Stack2)
 
 
 start_pwm(mIzq, mDer, 5000)
-outa[signoIzq]~
-outa[signoDer]~
+
 ''set_duty(1, 0)
 ''set_duty(2, 0)
 
@@ -80,19 +90,19 @@ outa[signoDer]~
 Serial.start(31, 30, 0, 9600) ''Que onda esto no se de donde sale el start y sus parametros
   repeat
     ''valor:=ina[16]
-    Serial.str(string("Sensor RFA: "))
-    Serial.Dec(sRfA)
+    Serial.str(string("stratA: "))
+    Serial.Dec(stratA)
     Serial.tx(13) ''El tx13 es un enter nomas
     ''valor1:=ina[17]
-    Serial.str(string("Sensor RFB: "))
-    Serial.Dec(sRfB)
+    Serial.str(string("stratB: "))
+    Serial.Dec(stratB)
     Serial.tx(13)
-    Serial.str(string("Sensor RFC: "))
-    Serial.Dec(sRfC)
+    Serial.str(string("stratC: "))
+    Serial.Dec(stratC)
     Serial.tx(13)
     ''valor2:=ina[18]
-    Serial.str(string("Sensor RFD: "))
-    Serial.Dec(sRfD)
+    Serial.str(string("stratD: "))
+    Serial.Dec(stratD)
     Serial.tx(13)
     Serial.str(string("Sensor start: "))
     Serial.Dec(startSignal)
@@ -157,26 +167,20 @@ pub lecturas
     sDer :=  ina[right]
     slineaIzq := ina[leftLine]
     slineaDer := ina[rightLine]
-    startSignal := ina[rfA]
+    ''startSignal := ina[]
     sTopIzq := ina[topLeft]
     sTopFrente := ina[topFront]
     sTopDer := ina[topRight]
 
 pub lecturas2
   repeat
-    startSignal := ina[start]
-    ''sRfA := ina[rfA]
-    ''sRfB := ina[rfB]
-    ''sRfC := ina[rfC]
-    ''sRfD := ina[rfD]
+    stopSignal := ina[stop]
     ''provisoriamente es lo siguiente
-    {if sRfA == 0
-      if startSignal ==0
-        startSignal := 1
-        killSwitch := 0
-      else
-        startSignal := 0
-        killSwitch := 1 }
+    startSignal := ina[0]
+    stratA := ina[A]
+    stratB := ina[B]
+    stratC := ina[C]
+    stratD := ina[D]
 
 
 

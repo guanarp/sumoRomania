@@ -12,7 +12,7 @@ CON
   leftLine = 6 ''Estos son los sensores de linea
   rightLine = 5
 
-  mIzq = 26 ''Los pines para los motores
+  mIzq = 24 ''Los pines para los motores
   mDer = 27 ''27
 
   {signoIzq = 25 ''hay dos pines mas que hay que soldar para este caso
@@ -31,7 +31,7 @@ CON
   {veladelante = 80     ''max es 1880 y min 1080
   velatras = 20}
   veladelante = 1600''1785
-  velatras = 1400''1254
+  velatras = 1360''1254
   {Gveladelante=90
   Gvelatras=10}
   Gveladelante = 1840
@@ -91,7 +91,7 @@ stopSignal:=1
 repeat while (startSignal==1)
   repeat while (lineaDer==1 and lineaIzq==1) ''(lineaIzq==1 ''and lineaDer==1)
 
-    if startSignal == 0 or stopSignal == 0
+    if (startSignal == 0 or stopSignal == 0)
         repeat
           parar
           pauseMs(50)
@@ -99,7 +99,7 @@ repeat while (startSignal==1)
     elseif sFrente
       adelanterapido
 
-      if startSignal == 0 or stopSignal == 0
+      if (startSignal == 0 or stopSignal == 0)
         repeat
           parar
           pauseMs(50)
@@ -147,11 +147,11 @@ repeat while (startSignal==1)
 
     ''pauseMs(100)
     ''adelanterapidoPWM
-      if startSignal == 0 or stopSignal == 0
+      if (startSignal == 0 or stopSignal == 0)
         parar
         pauseMs(50)
 
-    if startSignal == 0 or stopSignal == 0
+    if (startSignal == 0 or stopSignal == 0)
       parar
       pauseMs(50)
 
@@ -159,7 +159,7 @@ repeat while (startSignal==1)
 
 
   reversa
-  pauseMs(100) ''estaba en 300 y es muuucho
+  pauseMs(200) ''estaba en 300 y es muuucho
   atras180
     ''pauseSec(0.1)
 if startSignal == 0 or stopSignal == 0
@@ -169,22 +169,6 @@ if startSignal == 0 or stopSignal == 0
 
 
 parar
-{pub control
-repeat
-  if ina[2]==1        'esperamos por el control
-      if ban==0
-         ban:=1
-      else
-
-       ban:=1
-      pause<(500)
-  else
-    ban :=1
-
-
-{PUB Print | S
-S := Num.ToStr(LongVal, Num#DEC)
-Term.Str(@S) }}
 
 
 pub lecturas
@@ -233,7 +217,7 @@ PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
   !outa[Pin]                                               ' set to opposite state
   waitcnt(ClkCycles + TimeBase)                                 ' wait until clk gets there
   !outa[Pin]
-  pauseMs(50)                                               ' return to orig. state
+  ''pauseMs(50)                                               ' return to orig. state
 
 
   {duration := (duration * (clkfreq / 1_000_000)) #> 381
