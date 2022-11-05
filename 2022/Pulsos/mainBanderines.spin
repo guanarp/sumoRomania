@@ -89,87 +89,70 @@ startSignal:=1
 stopSignal:=1
 
 repeat while (startSignal==1)
-  repeat while (lineaDer==1 and lineaIzq==1) ''(lineaIzq==1 ''and lineaDer==1)
+    repeat while (lineaDer==1 and lineaIzq==1) ''(lineaIzq==1 ''and lineaDer==1)
 
-    if (startSignal == 0 or stopSignal == 0)
+      if startSignal == 0 or stopSignal == 0
         repeat
           parar
           pauseMs(50)
 
-    elseif sFrente
-      adelanterapido
+      if sFrente and sFrenteDer and sFrenteIzq
+        adelanterapido
 
-      if (startSignal == 0 or stopSignal == 0)
-        repeat
-          parar
-          pauseMs(50)
-      elseif (sFrenteDer and lineaDer==1 and lineaIzq==1)
+        if startSignal == 0 or stopSignal == 0
+          repeat
+            parar
+            pauseMs(50)
+
+        elseif (sFrenteDer and lineaDer==1 and lineaIzq==1)
+          derechacorto
+        elseif (sFrenteIzq and lineaDer==1 and lineaIzq==1)
+          izquierdacorto
+
+
+      elseif sFrenteDer  and sFrente
         derechacorto
-      elseif (sFrenteIzq and lineaDer==1 and lineaIzq==1)
+
+      elseif sFrenteIzq and sFrente
         izquierdacorto
-      adelanterapido
 
-    elseif sFrenteDer
-      derechacorto
-
-    elseif sFrenteIzq
-      izquierdacorto
-
-    elseif sTopFrente
-       adelante
-
-    elseif sTopDer
-      derecha45
-
-    elseif sTopIzq
-      izquierda45
-
-    elseif sIzq
-      izquierda90
-
-    elseif sDer
-      derecha90
-
-    else
+      elseif sTopFrente
         adelante
-    ''adelante
-    ''pauseMs(1000)
-        {pauseMs(80) ''antes era 300
-        parar
-        repeat 4000
-          pauseMS(1)
-          if (sTopFrente or sTopDer or sTopIzq or sFrente or sFrenteDer or sFrenteIzq or sIzq or Sder)
-                              ''  bandera:=1
-                                quit}
-      ''else
-      ''  adelantePWM
+
+      elseif sTopDer
+        derecha90 ''era 45 pero probando porque es contra banderin
+
+      elseif sTopIzq
+        izquierda90
+
+      elseif sIzq
+        izquierda90
+        izquierda45
+
+      elseif sDer
+        derecha90
+        derecha45
 
 
+      else
+          adelante
+          pauseMs(30)
+          parar
+          repeat 4000
+            pauseMS(1)
+            if (sTopFrente or sTopDer or sTopIzq or sFrente or sFrenteDer or sFrenteIzq or sIzq or Sder)
+              quit
 
-    ''pauseMs(100)
-    ''adelanterapidoPWM
-      if (startSignal == 0 or stopSignal == 0)
+
+    if startSignal == 0 or stopSignal == 0
+      repeat
         parar
         pauseMs(50)
-
-    if (startSignal == 0 or stopSignal == 0)
-      parar
-      pauseMs(50)
-
-
-
-
-  reversa
-  pauseMs(200) ''estaba en 300 y es muuucho
-  atras180
-    ''pauseSec(0.1)
-if (startSignal == 0 or stopSignal == 0)
-    repeat
-      parar
-      pauseMs(50)
-
-
-parar
+    reversa
+    pauseMs(200) ''estaba en 300 y es muuucho
+    atras180
+      ''pauseSec(0.1)
+  parar
 
 
 pub lecturas

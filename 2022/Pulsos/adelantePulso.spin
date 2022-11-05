@@ -30,8 +30,8 @@ CON
 
   {veladelante = 80     ''max es 1880 y min 1080
   velatras = 20}
-  veladelante = 1600''1785
-  velatras = 1400''1254
+  veladelante = 1750''1785
+  velatras = 1200''1254
   {Gveladelante=90
   Gvelatras=10}
   Gveladelante = 1840
@@ -95,16 +95,22 @@ repeat while startSignal==0
 
 repeat while startSignal == 1
   ''rampa
-  izquierda90
-  ''izquierda45
+  ''izquierda90
+  izquierda45
   ''derecha45
   ''derecha90
   ''atras180
   ''izquierdacorto
   ''derechacorto
   ''adelanteLento
+  {adelante
+  pauseMs(200)
+  reversa
+  pauseMs(200)
+  atras180}
   ''adelante
-  pauseMs(500)
+  ''adelanterapido
+  pauseMs(1000)
 
   ''adelanteRapido
   ''reversa
@@ -294,7 +300,7 @@ pub atras180 | OneMS, TimeBase ''comprobar
     set_duty(2,Gveladelante)}
     PULSOUT(mIzq,Gvelatras)
     PULSOUT(mDer,Gveladelante)
-    waitcnt(TimeBase += 320*OneMS) 'ese 40 es un valor random despues vamos a tener que ajustar
+    waitcnt(TimeBase += 100*OneMS) 'ese 40 es un valor random despues vamos a tener que ajustar
     parar
     ''set_duty(1,0)
     ''set_duty(2,0)
@@ -307,7 +313,7 @@ pub rampa | vel, OneMS, TimeBase
   vel := 1480
   repeat until vel > 1880
     PULSOUT(mIzq,vel)
-    ''PULSOUT(mDer,vel)
+    PULSOUT(mDer,vel)
     vel += 50
     waitcnt(TimeBase += 500*OneMS)
   TimeBase := cnt
@@ -317,7 +323,7 @@ pub rampa | vel, OneMS, TimeBase
   vel := 1480
   repeat until vel < 1080
     PULSOUT(mIzq,vel)
-    ''PULSOUT(mDer,vel)
+    PULSOUT(mDer,vel)
     vel -= 50
     TimeBase := cnt
     waitcnt(TimeBase += 500*OneMS)
@@ -380,10 +386,10 @@ pub derecha90 | OneMS, TimeBase    ''comprobar
   ''outa[signoDer]~~
   {set_duty(1,Gvelatras)
   set_duty(2,Gveladelante)}
-  PULSOUT(mIzq,Gveladelante)
+  PULSOUT(mIzq,Gveladelante+100)
   PULSOUT(mDer,Gvelatras)
 
-  waitcnt(TimeBase += 200*OneMS) 'ajustar
+  waitcnt(TimeBase += 180*OneMS) 'ajustar
 
   parar
 

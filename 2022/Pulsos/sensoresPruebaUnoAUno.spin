@@ -63,12 +63,13 @@ var
 
 PUB Principal
 'dira[0..3]~     ''Entradas sensores de lineas y pines de control A y B
-dira[0]~
-dira[5..6]~ ''Entradas Control y lineas
-dira[8..11]~ ''Entradas Pepper
+dira[0..7]~ ''Entradas Control y lineas
+dira[8..12]~ ''Entradas Pepper
+dira[16..18]~
 dira[20..22]~   ''Entradas sensores Keyence
-dira[23..27]~~    ''Salidas motor y pines de direccion
-dira[25]~
+dira[24]~~
+dira[27]~~    ''Salidas motor y pines de direccion
+dira[25..26]~
 
 us:= clkfreq / 1_000_000
 
@@ -90,8 +91,8 @@ repeat while startSignal==0
   ''izquierda45PWM
   ''pauseSec(2)
 
-startSignal:=1
-stopSignal:=1
+{startSignal:=1
+stopSignal:=1}
 
 repeat while (startSignal==1)
   if (startSignal == 0 or stopSignal == 0)
@@ -118,14 +119,16 @@ repeat while (startSignal==1)
     if sIzq ==1
       izquierda90
     else
-      parar
-      pauseMs(50)
+      repeat
+        parar
+        pauseMs(50)
   elseif (stratA ==0 and stratB ==1 and stratC ==0 and stratD ==0 and stopSignal ==1)
     if (sDer ==1 and stopSignal ==1)
       derecha90
     else
-      parar
-      pauseMs(50)
+      repeat
+        parar
+        pauseMs(50)
   elseif (stratA ==0 and stratB ==1 and stratC ==0 and stratD ==1 and stopSignal ==1)
     if sTopIzq ==1
       izquierda45
@@ -136,26 +139,30 @@ repeat while (startSignal==1)
     if sTopDer ==1
       derecha45
     else
-      parar
-      pauseMs(50)
+      repeat
+        parar
+        pauseMs(50)
   elseif (stratA ==0 and stratB ==1 and stratC ==1 and stratD ==1 and stopSignal ==1)
     if sFrenteIzq ==1
       izquierdacorto
     else
-      parar
-      pauseMs(50)
+      repeat
+        parar
+        pauseMs(50)
   elseif (stratA ==1 and stratB ==0 and stratC ==0 and stratD ==0 and stopSignal ==1)
     if sFrenteDer ==1
       derechacorto
     else
-      parar
-      pauseMs(50)
+      repeat
+        parar
+        pauseMs(50)
   elseif (stratA ==1 and stratB ==0 and stratC ==0 and stratD ==1 and stopSignal ==1)
     if sFrente ==1
       adelanteRapido
     else
-      parar
-      pauseMs(50)
+      repeat
+        parar
+        pauseMs(50)
   else
     repeat
         parar
@@ -222,7 +229,6 @@ PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
   !outa[Pin]                                               ' set to opposite state
   waitcnt(ClkCycles + TimeBase)                                 ' wait until clk gets there
   !outa[Pin]
-  ''pauseMs(50)                                               ' return to orig. state
 
 
   {duration := (duration * (clkfreq / 1_000_000)) #> 381
@@ -396,7 +402,7 @@ pub derechacorto | OneMS, TimeBase 'comprobar
   {set_duty(1,80)
   set_duty(2,90)}
   PULSOUT(mIzq,1950)
-  pauseMs(50)
+  ''pauseMs(50)
   PULSOUT(mDer,1600)
 
 
@@ -474,3 +480,10 @@ PUB pause(time) | clocks                 '' Pause for number of milliseconds
   if time > 0
     clocks := ((clkfreq / 1000) * time)
     waitcnt(clocks + cnt)
+
+PUB pauseUs(time) | TimeBase, OneUS                 '' Pause for number of milliseconds
+  if time > 0
+    OneUS := clkfreq / 1_000_000 'Calculate cycles per 1 millisecond
+    TimeBase := cnt 'Get current count
+    repeat time
+      waitcnt(TimeBase += OneUS)

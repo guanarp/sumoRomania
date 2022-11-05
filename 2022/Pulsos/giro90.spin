@@ -176,16 +176,16 @@ pub lecturas
   ''lectura de sensores
   repeat
     sIzq := ina[left]
-    sFrenteIzq := ina[frontLeft]
-    sFrente := ina[front]
-    sFrenteDer := ina[frontRight]
+    sFrenteIzq := 0
+    sFrente := 0
+    sFrenteDer := 0
     sDer := ina[right]
     ''lineaIzq := ina[leftLine]
     ''  lineaDer := ina[rightLine]
     ''startSignal := ina[rfA]
-    sTopIzq := ina[topLeft]
-    sTopFrente := ina[topFront]
-    sTopDer := ina[topRight]
+    sTopIzq := 0
+    sTopFrente := 0
+    sTopDer := 0
 
 pub lecturas2
   ''lectura de sensores
