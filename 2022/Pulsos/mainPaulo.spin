@@ -20,11 +20,11 @@ CON
 
 
   topLeft = 21
-  topFront = 19
-  topRight = 17 ''Ult pin de IO
+  topFront = 20
+  topRight = 22 ''Ult pin de IO
 
-  stop = 0''0
-  start = 25
+  stop = 25''0
+  start = 0
   ''rfB = 1
   ''rfC = 2
   ''rfD = 3
@@ -65,9 +65,7 @@ PUB Principal
 'dira[0..3]~     ''Entradas sensores de lineas y pines de control A y B
 dira[0]~
 dira[5..6]~ ''Entradas Control y lineas
-dira[8..11]~
-dira[17]~ ''Entradas Pepper
-dira[19]~
+dira[8..11]~ ''Entradas Pepper
 dira[20..22]~   ''Entradas sensores Keyence
 dira[23..27]~~    ''Salidas motor y pines de direccion
 dira[25]~
@@ -84,12 +82,6 @@ parar
 cognew(lecturas, @Stack) ''Habilito un nucleo para que en paralelo ejecute la lectura de todos los sensores
 cognew(lecturas2, @Stack2)
 ''cognew(lecturas3, @Stack3)
-
-stratA := ina[A]
-stratB := ina[B]
-stratC := ina[C]
-stratD := ina[D]
-
 repeat while startSignal==0
   parar
   pauseMs(50)
@@ -101,7 +93,7 @@ repeat while startSignal==0
 startSignal:=1
 stopSignal:=1
 if stratA == 1
-  repeat while (startSignal==1)
+  repeat while (startSignal==1 and stopSignal==1)
     repeat while (lineaDer==1 and lineaIzq==1) ''(lineaIzq==1 ''and lineaDer==1)
       ''bandera:=0
       if (startSignal == 0 or stopSignal == 0)
@@ -114,172 +106,91 @@ if stratA == 1
           atras180
 
       elseif sFrente==1
-        adelanterapido
-        pauseMs(2)
-
-        if (startSignal == 0 or stopSignal == 0)
-          repeat
-            parar
-            pauseMs(50)
-        elseif (lineaDer==0 or lineaIzq==0)
-          reversa
-          pauseMs(300) ''estaba en 300 y es muuucho
-          atras180
-        elseif (sFrenteDer==1 and lineaDer==1 and lineaIzq==1)
-          derechacorto
-          pauseMs(2)
-          bandera:=1
-          if (lineaDer==0 or lineaIzq==0)
-                                reversa
-                                pauseMs(300) ''estaba en 300 y es muuucho
-                                atras180
-          elseif (startSignal == 0 or stopSignal == 0)
+        repeat while (sFrente==1 and lineaDer==1 and lineaIzq==1)
+          if sFrenteDer==1
+            derechacorto
+          elseif sFrenteIzq==1
+            izquierdacorto
+          adelanterapido
+          if (startSignal == 0 or stopSignal == 0)
                                 repeat
                                   parar
                                   pauseMs(50)
-        elseif (sFrenteIzq==1 and lineaDer==1 and lineaIzq==1)
-          izquierdacorto
-          pauseMs(2)
-          bandera:=1
-          if (lineaDer==0 or lineaIzq==0)
-                                reversa
-                                pauseMs(300) ''estaba en 300 y es muuucho
-                                atras180
-          elseif (startSignal == 0 or stopSignal == 0)
-                                repeat
-                                                        parar
-                                                        pauseMs(50)
+
 
       elseif sFrenteDer==1
-        derechacorto
-        pauseMs(2)
-        if (lineaDer==0 or lineaIzq==0)
-          reversa
-          pauseMs(300) ''estaba en 300 y es muuucho
-          atras180
-        elseif (startSignal == 0 or stopSignal == 0)
-          repeat
-            parar
-            pauseMs(50)
+        repeat until (sFrente==1)
+          derechacorto
+          if (startSignal == 0 or stopSignal == 0)
+                                repeat
+                                  parar
+                                  pauseMs(50)
+        parar
 
       elseif sFrenteIzq==1
-        izquierdacorto
-        pauseMs(2)
-        if (lineaDer==0 or lineaIzq==0)
-          reversa
-          pauseMs(300) ''estaba en 300 y es muuucho
-          atras180
-        elseif (startSignal == 0 or stopSignal == 0)
-          repeat
-            parar
-            pauseMs(50)
+        repeat until (sFrente==1)
+          izquierdacorto
+          if (startSignal == 0 or stopSignal == 0)
+                                repeat
+                                  parar
+                                  pauseMs(50)
+        parar
 
       elseif sTopFrente==1
+
          adelante
          pauseMs(10)
-         if (lineaDer==0 or lineaIzq==0)
-          reversa
-          pauseMs(300) ''estaba en 300 y es muuucho
-          atras180
-         elseif (startSignal == 0 or stopSignal == 0)
-          repeat
-            parar
-            pauseMs(50)
+
 
       elseif sTopDer==1
-        derecha45
-        pauseMs(2)
-        if (lineaDer==0 or lineaIzq==0)
-          reversa
-          pauseMs(300) ''estaba en 300 y es muuucho
-          atras180
-        elseif (startSignal == 0 or stopSignal == 0)
-          repeat
-            parar
-            pauseMs(50)
+        repeat until (sFrente==1 or sTopIzq==1 or sTopFrente==1 or sFrenteIzq==1 or sIzq==1 or lineaIzq==0 or lineaDer==0)
+          derecha45
+          if (startSignal == 0 or stopSignal == 0)
+                                repeat
+                                  parar
+                                  pauseMs(50)
+        parar
 
       elseif sTopIzq==1
-        izquierda45
-        pauseMs(2)
-        if (lineaDer==0 or lineaIzq==0)
-          reversa
-          pauseMs(300) ''estaba en 300 y es muuucho
-          atras180
-        elseif (startSignal == 0 or stopSignal == 0)
-          repeat
-            parar
-            pauseMs(50)
+        repeat until (sFrente==1 or sTopDer==1 or sTopFrente==1 or sFrenteDer==1 or sDer==1 or lineaDer==0 or lineaIzq==0)
+          izquierda45
+          if (startSignal == 0 or stopSignal == 0)
+                                repeat
+                                  parar
+                                  pauseMs(50)
+        parar
 
       elseif sIzq==1
         izquierda90
-        pauseMs(2)
-        if (lineaDer==0 or lineaIzq==0)
-          reversa
-          pauseMs(300) ''estaba en 300 y es muuucho
-          atras180
-        elseif (startSignal == 0 or stopSignal == 0)
-          repeat
-            parar
-            pauseMs(50)
+        pauseMs(7)
 
       elseif sDer==1
         derecha90
-        pauseMs(2)
-        if (lineaDer==0 or lineaIzq==0)
-          reversa
-          pauseMs(300) ''estaba en 300 y es muuucho
-          atras180
-        elseif (startSignal == 0 or stopSignal == 0)
-          repeat
-            parar
-            pauseMs(50)
-
+        pauseMs(7)
 
       else
           adelante
           pauseMs(80) ''antes era 300
           parar
-          if (lineaDer==0 or lineaIzq==0)
-                                reversa
-                                pauseMs(300) ''estaba en 300 y es muuucho
-                                atras180
-          elseif (startSignal == 0 or stopSignal == 0)
-                                repeat
-                                  parar
-                                  pauseMs(50)
+
           repeat 80
             ''pauseMS(10)
             pauseMs(50)
-            if (startSignal == 0 or stopSignal == 0)
-              parar
-              pauseMs(50)
-            elseif (sTopFrente or sTopDer or sTopIzq or sFrente or sFrenteDer or sFrenteIzq or sIzq or Sder)
-              quit
-
-
-
-      ''pauseMs(100)
-      ''adelanterapidoPWM
-        if (startSignal == 0 or stopSignal == 0)
-          parar
-          pauseMs(50)
-
-      if (startSignal == 0 or stopSignal == 0)
-        parar
-        pauseMs(50)
+            if (sTopFrente or sTopDer or sTopIzq or sFrente or sFrenteDer or sFrenteIzq or sIzq or Sder)
+                                                        quit
 
 
 
     if startSignal == 0 or stopSignal == 0
       repeat
-      parar
-      pauseMs(50)
+        parar
+        pauseMs(50)
 
 
     reversa
     pauseMs(300) ''estaba en 300 y es muuucho
     atras180
-    pauseMs(2)
+    pauseMs(7)
       ''pauseSec(0.1)
   parar
 
@@ -298,7 +209,7 @@ elseif stratB == 1
 
       elseif sFrente==1
         adelanterapido
-        pauseMs(2)
+        pauseMs(7)
 
         if (startSignal == 0 or stopSignal == 0)
           repeat
@@ -308,9 +219,9 @@ elseif stratB == 1
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
           atras180
-        elseif (sFrenteDer==1 and lineaDer==1 and lineaIzq==1)
+        elseif (sFrenteDer==1 and lineaDer==1 and lineaIzq==1 and bandera==0)
           derechacorto
-          pauseMs(2)
+          pauseMs(7)
           bandera:=1
           if (lineaDer==0 or lineaIzq==0)
                                 reversa
@@ -322,7 +233,7 @@ elseif stratB == 1
                                   pauseMs(50)
         elseif (sFrenteIzq==1 and lineaDer==1 and lineaIzq==1 and bandera==0)
           izquierdacorto
-          pauseMs(2)
+          pauseMs(7)
           bandera:=1
           if (lineaDer==0 or lineaIzq==0)
                                 reversa
@@ -335,7 +246,7 @@ elseif stratB == 1
 
       elseif sFrenteDer==1
         derechacorto
-        pauseMs(2)
+        pauseMs(7)
         if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
@@ -347,7 +258,7 @@ elseif stratB == 1
 
       elseif sFrenteIzq==1
         izquierdacorto
-        pauseMs(2)
+        pauseMs(7)
         if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
@@ -359,7 +270,7 @@ elseif stratB == 1
 
       elseif sTopFrente==1
          adelante
-         pauseMs(2)
+         pauseMs(7)
          if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
@@ -371,7 +282,7 @@ elseif stratB == 1
 
       elseif sTopDer==1
         derecha45
-        pauseMs(2)
+        pauseMs(7)
         if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
@@ -383,7 +294,7 @@ elseif stratB == 1
 
       elseif sTopIzq==1
         izquierda45
-        pauseMs(2)
+        pauseMs(7)
         if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
@@ -395,7 +306,7 @@ elseif stratB == 1
 
       elseif sIzq==1
         izquierda90
-        pauseMs(2)
+        pauseMs(7)
         if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
@@ -407,7 +318,7 @@ elseif stratB == 1
 
       elseif sDer==1
         derecha90
-        pauseMs(2)
+        pauseMs(7)
         if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
@@ -462,19 +373,19 @@ elseif stratB == 1
     reversa
     pauseMs(300) ''estaba en 300 y es muuucho
     atras180
-    pauseMs(2)
+    pauseMs(7)
       ''pauseSec(0.1)
   parar
 
 elseif stratD == 1
   repeat while (startSignal==1)
-    ''adelante
     derecha45
-    pauseMs(2)
+    pauseMs(7)
     adelante
-    pauseMs(130)
-    izquierda90
-    pauseMs(2)
+    pauseMs(200)
+    izquierda45
+    pauseMs(7)
+    ''adelante
     repeat while (lineaDer==1 and lineaIzq==1) ''(lineaIzq==1 ''and lineaDer==1)
 
       if (startSignal == 0 or stopSignal == 0)
@@ -488,7 +399,7 @@ elseif stratD == 1
 
       elseif sFrente==1
         adelanterapido
-        pauseMs(2)
+        pauseMs(7)
 
         if (startSignal == 0 or stopSignal == 0)
           repeat
@@ -498,9 +409,9 @@ elseif stratD == 1
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
           atras180
-        elseif (sFrenteDer==1 and lineaDer==1 and lineaIzq==1)
+        elseif (sFrenteDer==1 and lineaDer==1 and lineaIzq==1 and bandera==0)
           derechacorto
-          pauseMs(2)
+          pauseMs(7)
           bandera:=1
           if (lineaDer==0 or lineaIzq==0)
                                 reversa
@@ -510,9 +421,9 @@ elseif stratD == 1
                                 repeat
                                   parar
                                   pauseMs(50)
-        elseif (sFrenteIzq==1 and lineaDer==1 and lineaIzq==1 )
+        elseif (sFrenteIzq==1 and lineaDer==1 and lineaIzq==1 and bandera==0)
           izquierdacorto
-          pauseMs(2)
+          pauseMs(7)
           bandera:=1
           if (lineaDer==0 or lineaIzq==0)
                                 reversa
@@ -525,7 +436,7 @@ elseif stratD == 1
 
       elseif sFrenteDer==1
         derechacorto
-        pauseMs(2)
+        pauseMs(7)
         if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
@@ -537,7 +448,7 @@ elseif stratD == 1
 
       elseif sFrenteIzq==1
         izquierdacorto
-        pauseMs(2)
+        pauseMs(7)
         if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
@@ -549,7 +460,7 @@ elseif stratD == 1
 
       elseif sTopFrente==1
          adelante
-         pauseMs(2)
+         pauseMs(7)
          if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
@@ -561,7 +472,7 @@ elseif stratD == 1
 
       elseif sTopDer==1
         derecha45
-        pauseMs(2)
+        pauseMs(7)
         if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
@@ -573,7 +484,7 @@ elseif stratD == 1
 
       elseif sTopIzq==1
         izquierda45
-        pauseMs(2)
+        pauseMs(7)
         if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
@@ -585,7 +496,7 @@ elseif stratD == 1
 
       elseif sIzq==1
         izquierda90
-        pauseMs(2)
+        pauseMs(7)
         if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
@@ -597,7 +508,7 @@ elseif stratD == 1
 
       elseif sDer==1
         derecha90
-        pauseMs(2)
+        pauseMs(7)
         if (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
@@ -652,28 +563,23 @@ elseif stratD == 1
     reversa
     pauseMs(300) ''estaba en 300 y es muuucho
     atras180
-    pauseMs(2)
+    pauseMs(7)
       ''pauseSec(0.1)
   parar
 
-
-else
+elseif stratC == 1
   repeat while (startSignal==1)
-    giroU
     repeat while (lineaDer==1 and lineaIzq==1) ''(lineaIzq==1 ''and lineaDer==1)
-      ''bandera:=0
-      if (startSignal == 0 or stopSignal == 0)
+
+      if startSignal == 0 or stopSignal == 0
         repeat
           parar
           pauseMs(50)
-      elseif (lineaDer==0 or lineaIzq==0)
-          reversa
-          pauseMs(300) ''estaba en 300 y es muuucho
-          atras180
 
-      elseif sFrente==1
+      elseif (sFrente and sFrenteDer and sFrenteIzq)
         adelanterapido
-        pauseMs(2)
+        pauseMs(7)
+
 
         if (startSignal == 0 or stopSignal == 0)
           repeat
@@ -683,161 +589,310 @@ else
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
           atras180
-        elseif (sFrenteDer==1 and lineaDer==1 and lineaIzq==1)
+
+        elseif (sFrenteDer and lineaDer==1 and lineaIzq==1)
           derechacorto
-          pauseMs(2)
-          bandera:=1
-          if (lineaDer==0 or lineaIzq==0)
-                                reversa
-                                pauseMs(300) ''estaba en 300 y es muuucho
-                                atras180
-          elseif (startSignal == 0 or stopSignal == 0)
+          pauseMs(7)
+          if startSignal == 0 or stopSignal == 0
                                 repeat
                                   parar
                                   pauseMs(50)
-        elseif (sFrenteIzq==1 and lineaDer==1 and lineaIzq==1)
+          elseif (lineaDer==0 or lineaIzq==0)
+            reversa
+            pauseMs(300) ''estaba en 300 y es muuucho
+            atras180
+        elseif (sFrenteIzq and lineaDer==1 and lineaIzq==1)
           izquierdacorto
-          pauseMs(2)
-          bandera:=1
-          if (lineaDer==0 or lineaIzq==0)
-                                reversa
-                                pauseMs(300) ''estaba en 300 y es muuucho
-                                atras180
-          elseif (startSignal == 0 or stopSignal == 0)
+          pauseMs(7)
+          if startSignal == 0 or stopSignal == 0
                                 repeat
-                                                        parar
-                                                        pauseMs(50)
+                                  parar
+                                  pauseMs(50)
+          elseif (lineaDer==0 or lineaIzq==0)
+            reversa
+            pauseMs(300) ''estaba en 300 y es muuucho
+            atras180
 
-      elseif sFrenteDer==1
+
+      elseif sFrenteDer  and sFrente
         derechacorto
-        pauseMs(2)
-        if (lineaDer==0 or lineaIzq==0)
-          reversa
-          pauseMs(300) ''estaba en 300 y es muuucho
-          atras180
-        elseif (startSignal == 0 or stopSignal == 0)
+        pauseMs(7)
+        if startSignal == 0 or stopSignal == 0
           repeat
             parar
             pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
 
-      elseif sFrenteIzq==1
+      elseif sFrenteIzq and sFrente
         izquierdacorto
-        pauseMs(2)
-        if (lineaDer==0 or lineaIzq==0)
-          reversa
-          pauseMs(300) ''estaba en 300 y es muuucho
-          atras180
-        elseif (startSignal == 0 or stopSignal == 0)
+        pauseMs(7)
+        if startSignal == 0 or stopSignal == 0
           repeat
             parar
             pauseMs(50)
-
-      elseif sTopFrente==1
-         adelante
-         pauseMs(10)
-         if (lineaDer==0 or lineaIzq==0)
+        elseif (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
           atras180
-         elseif (startSignal == 0 or stopSignal == 0)
+
+      elseif sTopFrente
+        adelante
+        pauseMs(7)
+        if startSignal == 0 or stopSignal == 0
           repeat
             parar
             pauseMs(50)
-
-      elseif sTopDer==1
-        derecha45
-        pauseMs(2)
-        if (lineaDer==0 or lineaIzq==0)
+        elseif (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
           atras180
-        elseif (startSignal == 0 or stopSignal == 0)
+
+      elseif sTopDer
+        derecha90 ''era 45 pero probando porque es contra banderin
+        pauseMs(7)
+        if startSignal == 0 or stopSignal == 0
           repeat
             parar
             pauseMs(50)
-
-      elseif sTopIzq==1
-        izquierda45
-        pauseMs(2)
-        if (lineaDer==0 or lineaIzq==0)
+        elseif (lineaDer==0 or lineaIzq==0)
           reversa
           pauseMs(300) ''estaba en 300 y es muuucho
           atras180
-        elseif (startSignal == 0 or stopSignal == 0)
-          repeat
-            parar
-            pauseMs(50)
 
-      elseif sIzq==1
+      elseif sTopIzq
         izquierda90
-        pauseMs(2)
-        if (lineaDer==0 or lineaIzq==0)
-          reversa
-          pauseMs(300) ''estaba en 300 y es muuucho
-          atras180
-        elseif (startSignal == 0 or stopSignal == 0)
+        pauseMs(7)
+        if startSignal == 0 or stopSignal == 0
           repeat
             parar
             pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
 
-      elseif sDer==1
-        derecha90
-        pauseMs(2)
-        if (lineaDer==0 or lineaIzq==0)
-          reversa
-          pauseMs(300) ''estaba en 300 y es muuucho
-          atras180
-        elseif (startSignal == 0 or stopSignal == 0)
+      elseif sIzq
+        izquierda90
+        pauseMs(7)
+        izquierda45
+        pauseMs(7)
+        if startSignal == 0 or stopSignal == 0
           repeat
             parar
             pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
+
+      elseif sDer
+        derecha90
+        pauseMs(7)
+        derecha45
+        pauseMs(7)
+        if startSignal == 0 or stopSignal == 0
+          repeat
+            parar
+            pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
 
 
       else
           adelante
-          pauseMs(80) ''antes era 300
+          pauseMs(30)
           parar
-          if (lineaDer==0 or lineaIzq==0)
-                                reversa
-                                pauseMs(300) ''estaba en 300 y es muuucho
-                                atras180
-          elseif (startSignal == 0 or stopSignal == 0)
+          if startSignal == 0 or stopSignal == 0
                                 repeat
                                   parar
                                   pauseMs(50)
-          repeat 80
-            ''pauseMS(10)
-            pauseMs(50)
-            if (startSignal == 0 or stopSignal == 0)
-              parar
-              pauseMs(50)
-            elseif (sTopFrente or sTopDer or sTopIzq or sFrente or sFrenteDer or sFrenteIzq or sIzq or Sder)
+          elseif (lineaDer==0 or lineaIzq==0)
+                                reversa
+                                pauseMs(300) ''estaba en 300 y es muuucho
+                                atras180
+          repeat 400
+            pauseMS(10)
+            if (sTopFrente or sTopDer or sTopIzq or sFrente or sFrenteDer or sFrenteIzq or sIzq or Sder)
               quit
-
-
-
-      ''pauseMs(100)
-      ''adelanterapidoPWM
-        if (startSignal == 0 or stopSignal == 0)
-          parar
-          pauseMs(50)
-
-      if (startSignal == 0 or stopSignal == 0)
-        parar
-        pauseMs(50)
-
 
 
     if startSignal == 0 or stopSignal == 0
       repeat
-      parar
-      pauseMs(50)
-
-
+        parar
+        pauseMs(50)
     reversa
-    pauseMs(300) ''estaba en 300 y es muuucho
+    pauseMs(200) ''estaba en 300 y es muuucho
     atras180
-    pauseMs(2)
+      ''pauseSec(0.1)
+  parar
+else
+  repeat while (startSignal==1)
+    repeat while (lineaDer==1 and lineaIzq==1) ''(lineaIzq==1 ''and lineaDer==1)
+
+      if startSignal == 0 or stopSignal == 0
+        repeat
+          parar
+          pauseMs(50)
+
+      elseif sFrente and sFrenteDer and sFrenteIzq
+        adelanterapido
+        pauseMs(7)
+
+
+        if startSignal == 0 or stopSignal == 0
+          repeat
+            parar
+            pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
+
+        {elseif (sFrenteDer and lineaDer==1 and lineaIzq==1)
+          derechacorto
+          pauseMs(7)
+          if startSignal == 0 or stopSignal == 0
+                                repeat
+                                  parar
+                                  pauseMs(50)
+          elseif (lineaDer==0 or lineaIzq==0)
+            reversa
+            pauseMs(300) ''estaba en 300 y es muuucho
+            atras180
+        elseif (sFrenteIzq and lineaDer==1 and lineaIzq==1)
+          izquierdacorto
+          pauseMs(7)
+          if startSignal == 0 or stopSignal == 0
+                                repeat
+                                  parar
+                                  pauseMs(50)
+          elseif (lineaDer==0 or lineaIzq==0)
+            reversa
+            pauseMs(300) ''estaba en 300 y es muuucho
+            atras180}
+
+
+      elseif (sFrenteDer==1  and sFrente==1 and bandera ==0)
+        derechacorto
+        pauseMs(7)
+        bandera :=1
+        if startSignal == 0 or stopSignal == 0
+          repeat
+            parar
+            pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
+
+      elseif (sFrenteIzq==1 and sFrente==1 and bandera ==0)
+        izquierdacorto
+        pauseMs(7)
+        bandera:=1
+        if startSignal == 0 or stopSignal == 0
+          repeat
+            parar
+            pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
+
+      elseif sTopFrente==1
+        adelante
+        pauseMs(7)
+        if startSignal == 0 or stopSignal == 0
+          repeat
+            parar
+            pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
+
+      elseif sTopDer==1
+        derecha90 ''era 45 pero probando porque es contra banderin
+        pauseMs(7)
+        if startSignal == 0 or stopSignal == 0
+          repeat
+            parar
+            pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
+
+      elseif sTopIzq==1
+        izquierda90
+        pauseMs(7)
+        if startSignal == 0 or stopSignal == 0
+          repeat
+            parar
+            pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
+
+      elseif sIzq==1
+        izquierda90
+        pauseMs(7)
+        izquierda45
+        pauseMs(7)
+        if startSignal == 0 or stopSignal == 0
+          repeat
+            parar
+            pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
+
+      elseif sDer==1
+        derecha90
+        pauseMs(7)
+        derecha45
+        pauseMs(7)
+        if startSignal == 0 or stopSignal == 0
+          repeat
+            parar
+            pauseMs(50)
+        elseif (lineaDer==0 or lineaIzq==0)
+          reversa
+          pauseMs(300) ''estaba en 300 y es muuucho
+          atras180
+
+
+      else
+          adelante
+          pauseMs(30)
+          parar
+          if startSignal == 0 or stopSignal == 0
+                                repeat
+                                  parar
+                                  pauseMs(50)
+          elseif (lineaDer==0 or lineaIzq==0)
+                                reversa
+                                pauseMs(300) ''estaba en 300 y es muuucho
+                                atras180
+          repeat 400
+            pauseMS(10)
+            if (sTopFrente or sTopDer or sTopIzq or sFrente or sFrenteDer or sFrenteIzq or sIzq or Sder)
+              quit
+
+
+    if startSignal == 0 or stopSignal == 0
+      repeat
+        parar
+        pauseMs(50)
+    reversa
+    pauseMs(200) ''estaba en 300 y es muuucho
+    atras180
       ''pauseSec(0.1)
   parar
 
@@ -867,12 +922,15 @@ pub lecturas2
   repeat
     stopSignal := ina[stop]
     ''provisoriamente es lo siguiente
-    startSignal := ina[start]
+    startSignal := ina[0]
     ''killSwitch := ina[rfC]
     ''pauseMs(2)
     lineaIzq := ina[leftLine]
     lineaDer := ina[rightLine]
-
+    stratA := ina[A]
+    stratB := ina[B]
+    stratC := ina[C]
+    stratD := ina[D]
 
 
 
@@ -886,7 +944,7 @@ PUB PULSOUT(Pin,Duration)  | ClkCycles, TimeBase
 '' time * 2us = total time
   ClkCycles := (Duration *us) #> cntMin        ' duration * clk cycles for 2us
   TimeBase := cnt                                                         ' - inst. time, min cntMin
-  ''dira[Pin]~~                                              ' Set to output
+  dira[Pin]~~                                              ' Set to output
   !outa[Pin]                                               ' set to opposite state
   waitcnt(ClkCycles + TimeBase)                                 ' wait until clk gets there
   !outa[Pin]
@@ -924,9 +982,9 @@ pub atras180 | OneMS, TimeBase ''comprobar
     ''outa[signoDer]~~
     {set_duty(1,Gvelatras)
     set_duty(2,Gveladelante)}
-    PULSOUT(mIzq,Gveladelante)
-    PULSOUT(mDer,Gvelatras)
-    waitcnt(TimeBase += 143*OneMS) 'ese 40 es un valor random despues vamos a tener que ajustar
+    PULSOUT(mIzq,Gvelatras)
+    PULSOUT(mDer,Gveladelante)
+    waitcnt(TimeBase += 100*OneMS) 'ese 40 es un valor random despues vamos a tener que ajustar
     parar
     ''set_duty(1,0)
     ''set_duty(2,0)
@@ -967,8 +1025,8 @@ pub izquierda45 | OneMS, TimeBase 'comprobar
   PULSOUT(mIzq,Gvelatras)
   PULSOUT(mDer,Gveladelante)
 
-  ''waitcnt(TimeBase += 100*OneMS) 'ajustar
-  waitcnt(TimeBase += 40*OneMS)
+  waitcnt(TimeBase += 100*OneMS) 'ajustar
+
   parar
   ''set_duty(1,0)
   ''set_duty(2,0)
@@ -985,8 +1043,7 @@ pub izquierda90 | OneMS, TimeBase 'comprobar
   PULSOUT(mIzq,Gvelatras)
   PULSOUT(mDer,Gveladelante)
 
-  ''waitcnt(TimeBase += 113*OneMS) 'ajustar
-  waitcnt(TimeBase += 80*OneMS)
+  waitcnt(TimeBase += 113*OneMS) 'ajustar
 
   parar
 
@@ -1001,7 +1058,7 @@ pub derecha45 | OneMS, TimeBase    ''comprobar
   PULSOUT(mIzq,Gveladelante)
   PULSOUT(mDer,Gvelatras)
 
-  waitcnt(TimeBase += 50*OneMS) 'ajustar
+  waitcnt(TimeBase += 100*OneMS) 'ajustar
 
   parar
 
@@ -1016,7 +1073,7 @@ pub derecha90 | OneMS, TimeBase    ''comprobar
   PULSOUT(mIzq,Gveladelante+100)
   PULSOUT(mDer,Gvelatras)
 
-  waitcnt(TimeBase += 80*OneMS) 'ajustar
+  waitcnt(TimeBase += 115*OneMS) 'ajustar
 
   parar
 
@@ -1050,10 +1107,10 @@ pub izquierdacorto | OneMS, TimeBase 'comprobar
   ''outa[signoDer]~~
   {set_duty(1,90)
   set_duty(2,80)}
-  PULSOUT(mIzq,1650)
-  PULSOUT(mDer,1880)
+  PULSOUT(mIzq,1700)
+  PULSOUT(mDer,1860)
 
-  waitcnt(TimeBase += 70*OneMS) 'ajustar
+  waitcnt(TimeBase += 100*OneMS) 'ajustar
 
   ''parar
   ''adelante
@@ -1066,26 +1123,15 @@ pub derechacorto | OneMS, TimeBase 'comprobar
   ''outa[signoDer]~~
   {set_duty(1,80)
   set_duty(2,90)}
-  PULSOUT(mIzq,1880)
-  PULSOUT(mDer,1650)
+  PULSOUT(mIzq,1860)
+  pauseMs(50)
+  PULSOUT(mDer,1700)
 
 
-  waitcnt(TimeBase += 70*OneMS) 'ajustar
-
+  waitcnt(TimeBase += 120*OneMS) 'ajustar
 
   ''parar
   ''adelante
-
-pub giroU | OneMS, TimeBase 'comprobar
-  TimeBase := cnt
-  OneMS := clkfreq / 1000
-
-  ''outa[signoIzq]~~
-  ''outa[signoDer]~~
-  {set_duty(1,80)
-  set_duty(2,90)}
-  PULSOUT(mIzq,1880)
-  PULSOUT(mDer,1720)
 
 {
 pub derechacortoPWM | OneMS, TimeBase, Time
@@ -1111,8 +1157,8 @@ pub adelanteLento
   ''outa[signoDer]~~
   {set_duty(1,2)
   set_duty(2,2)}
-  PULSOUT(mIzq,1650)
-  PULSOUT(mDer,1680)
+  PULSOUT(mIzq,1550)
+  PULSOUT(mDer,1550)
 
 
 pub adelanterapido
@@ -1130,7 +1176,7 @@ pub adelante
   {set_duty(1,veladelante)''velder)
   set_duty(2,veladelante)''velizq)}
   PULSOUT(mIzq,veladelante)
-  PULSOUT(mDer,veladelante+45)
+  PULSOUT(mDer,veladelante)
 
 
 pub reversa
@@ -1139,7 +1185,7 @@ pub reversa
   {set_duty(1,velatras)
   set_duty(2,velatras)}
   PULSOUT(mIzq,velatras)
-  PULSOUT(mDer,velatras-18)
+  PULSOUT(mDer,velatras)
 
 PUB pauseMs(time) | TimeBase, OneMS                 '' Pause for number of milliseconds
   if time > 0

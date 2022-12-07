@@ -101,18 +101,28 @@ repeat while startSignal == 1
   ''derecha90
   ''atras180
   ''izquierdacorto
+  adelanterapido
+  pauseMs(500)
   ''parar
-  derechacorto
-  parar
+  ''derechacorto
+  ''parar
   ''adelanteLento
+  parar
+  pauseMs(1000)
+  {reversa
+  pauseMs(100)
+  parar
+  pauseMs(1000)}
   {adelante
   pauseMs(200)
   reversa
   pauseMs(200)
   atras180}
-  ''adelante
+  {adelante
+  pauseMs(250)
+  parar
   ''adelanterapido
-  pauseMs(1000)
+  pauseMs(1000)}
 
   ''adelanteRapido
   ''reversa
@@ -300,9 +310,9 @@ pub atras180 | OneMS, TimeBase ''comprobar
     ''outa[signoDer]~~
     {set_duty(1,Gvelatras)
     set_duty(2,Gveladelante)}
-    PULSOUT(mIzq,Gvelatras)
-    PULSOUT(mDer,Gveladelante)
-    waitcnt(TimeBase += 100*OneMS) 'ese 40 es un valor random despues vamos a tener que ajustar
+    PULSOUT(mIzq,Gveladelante)
+    PULSOUT(mDer,Gvelatras)
+    waitcnt(TimeBase += 143*OneMS) 'ese 40 es un valor random despues vamos a tener que ajustar
     parar
     ''set_duty(1,0)
     ''set_duty(2,0)
@@ -343,8 +353,8 @@ pub izquierda45 | OneMS, TimeBase 'comprobar
   PULSOUT(mIzq,Gvelatras)
   PULSOUT(mDer,Gveladelante)
 
-  waitcnt(TimeBase += 100*OneMS) 'ajustar
-
+  ''waitcnt(TimeBase += 100*OneMS) 'ajustar
+  waitcnt(TimeBase += 40*OneMS)
   parar
   ''set_duty(1,0)
   ''set_duty(2,0)
@@ -361,7 +371,8 @@ pub izquierda90 | OneMS, TimeBase 'comprobar
   PULSOUT(mIzq,Gvelatras)
   PULSOUT(mDer,Gveladelante)
 
-  waitcnt(TimeBase += 113*OneMS) 'ajustar
+  ''waitcnt(TimeBase += 113*OneMS) 'ajustar
+  waitcnt(TimeBase += 80*OneMS)
 
   parar
 
@@ -376,7 +387,7 @@ pub derecha45 | OneMS, TimeBase    ''comprobar
   PULSOUT(mIzq,Gveladelante)
   PULSOUT(mDer,Gvelatras)
 
-  waitcnt(TimeBase += 100*OneMS) 'ajustar
+  waitcnt(TimeBase += 50*OneMS) 'ajustar
 
   parar
 
@@ -391,7 +402,7 @@ pub derecha90 | OneMS, TimeBase    ''comprobar
   PULSOUT(mIzq,Gveladelante+100)
   PULSOUT(mDer,Gvelatras)
 
-  waitcnt(TimeBase += 115*OneMS) 'ajustar
+  waitcnt(TimeBase += 80*OneMS) 'ajustar
 
   parar
 
@@ -425,10 +436,10 @@ pub izquierdacorto | OneMS, TimeBase 'comprobar
   ''outa[signoDer]~~
   {set_duty(1,90)
   set_duty(2,80)}
-  PULSOUT(mIzq,1700)
-  PULSOUT(mDer,1860)
+  PULSOUT(mIzq,1650)
+  PULSOUT(mDer,1880)
 
-  waitcnt(TimeBase += 100*OneMS) 'ajustar
+  waitcnt(TimeBase += 70*OneMS) 'ajustar
 
   ''parar
   ''adelante
@@ -441,16 +452,29 @@ pub derechacorto | OneMS, TimeBase 'comprobar
   ''outa[signoDer]~~
   {set_duty(1,80)
   set_duty(2,90)}
-  PULSOUT(mIzq,1860)
-  pauseMs(50)
-  PULSOUT(mDer,1700)
+  PULSOUT(mIzq,1880)
+  PULSOUT(mDer,1650)
 
 
-  waitcnt(TimeBase += 120*OneMS) 'ajustar
+  waitcnt(TimeBase += 70*OneMS) 'ajustar
+
 
   ''parar
   ''adelante
 
+pub giroU | OneMS, TimeBase 'comprobar
+  TimeBase := cnt
+  OneMS := clkfreq / 1000
+
+  ''outa[signoIzq]~~
+  ''outa[signoDer]~~
+  {set_duty(1,80)
+  set_duty(2,90)}
+  PULSOUT(mIzq,1880)
+  PULSOUT(mDer,1720)
+
+
+  waitcnt(TimeBase += 200*OneMS)
 {
 pub derechacortoPWM | OneMS, TimeBase, Time
   TimeBase := cnt
@@ -475,8 +499,8 @@ pub adelanteLento
   ''outa[signoDer]~~
   {set_duty(1,2)
   set_duty(2,2)}
-  PULSOUT(mIzq,1550)
-  PULSOUT(mDer,1550)
+  PULSOUT(mIzq,1650)
+  PULSOUT(mDer,1680)
 
 
 pub adelanterapido
@@ -494,7 +518,7 @@ pub adelante
   {set_duty(1,veladelante)''velder)
   set_duty(2,veladelante)''velizq)}
   PULSOUT(mIzq,veladelante)
-  PULSOUT(mDer,veladelante)
+  PULSOUT(mDer,veladelante+45)
 
 
 pub reversa
@@ -503,7 +527,7 @@ pub reversa
   {set_duty(1,velatras)
   set_duty(2,velatras)}
   PULSOUT(mIzq,velatras)
-  PULSOUT(mDer,velatras)
+  PULSOUT(mDer,velatras-18)
 
 
 {pub start_pwm(p1, p2, freq)

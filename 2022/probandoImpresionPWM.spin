@@ -25,8 +25,8 @@ CON
   mDer = 27''27
 
   topLeft = 21
-  topFront = 20
-  topRight = 22 ''Ult pin de IO
+  topFront = 19
+  topRight = 17 ''Ult pin de IO
 
   stop = 25
 
@@ -59,7 +59,7 @@ PUB Principal
 'dira[0..3]~     ''Entradas sensores de lineas y pines de control A y B
 dira[0..7]~ ''Entradas Control y lineas
 dira[8..12]~ ''Entradas Pepper
-dira[16..18]~
+dira[16..19]~
 dira[20..22]~   ''Entradas sensores Keyence
 dira[24..27]~~    ''Salidas motor y pines de direccion
 dira[25..26]~
@@ -108,7 +108,7 @@ Serial.start(31, 30, 0, 9600) ''Que onda esto no se de donde sale el start y sus
     Serial.Dec(startSignal)
     Serial.tx(13)
     Serial.str(string("Sensor kill: "))
-    Serial.Dec(killSwitch)
+    Serial.Dec(stopSignal)
     Serial.tx(13)
 
     Serial.str(string("LineaIZQ: "))
@@ -177,10 +177,7 @@ pub lecturas2
     stopSignal := ina[stop]
     ''provisoriamente es lo siguiente
     startSignal := ina[0]
-    stratA := ina[A]
-    stratB := ina[B]
-    stratC := ina[C]
-    stratD := ina[D]
+
 
 
 
